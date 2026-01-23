@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap');
+
+.app {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.controls {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  display: grid;
+  gap: 10px;
+  width: 232px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(110, 160, 235, 0.16), transparent 55%),
+    linear-gradient(180deg, rgba(12, 16, 22, 0.94), rgba(7, 10, 16, 0.92));
+  color: #f5f7fb;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-family: 'Space Grotesk', 'Avenir Next', sans-serif;
+  font-size: 11px;
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 26px 50px rgba(4, 6, 10, 0.45);
+}
+
+.controls--hidden {
+  display: none;
+}
+
+.controls-toggle {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 11;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(125, 175, 255, 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(130, 185, 255, 0.4),
+    rgba(100, 150, 235, 0.25)
+  );
+  color: #f4f6fb;
+  font-family: 'Space Grotesk', 'Avenir Next', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 16px 30px rgba(4, 6, 10, 0.35);
+}
+
+.controls-toggle:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(130, 185, 255, 0.6),
+    rgba(100, 150, 235, 0.35)
+  );
+}
+
+.controls-toggle:active {
+  transform: translateY(1px);
+}
+
+.controls,
+.controls * {
+  box-sizing: border-box;
+}
+
+.control-group {
+  display: grid;
+  gap: 8px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+}
+
+.control-group summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.control-group summary::-webkit-details-marker {
+  display: none;
+}
+
+.control-group summary::after {
+  content: '+';
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.control-group[open] summary::after {
+  content: '-';
+}
+
+.control-group[open] summary {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.control-title {
+  text-transform: uppercase;
+}
+
+.control-subtitle {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.control-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.control-divider {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.control-button {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(125, 175, 255, 0.35);
+  background: linear-gradient(
+    135deg,
+    rgba(130, 185, 255, 0.35),
+    rgba(100, 150, 235, 0.2)
+  );
+  color: #f4f6fb;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.control-button:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(130, 185, 255, 0.55),
+    rgba(100, 150, 235, 0.32)
+  );
+}
+
+.control-button:active {
+  transform: translateY(1px);
+}
+
+.control-fields label {
+  display: grid;
+  gap: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.control-group input[type='number'],
+.control-group input[type='text'] {
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(5, 8, 12, 0.7);
+  color: #f4f6fb;
+  font-family: inherit;
+  font-size: 11px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.control-group input[type='number']:focus,
+.control-group input[type='text']:focus {
+  outline: none;
+  border-color: rgba(130, 185, 255, 0.8);
+  box-shadow: 0 0 0 2px rgba(130, 185, 255, 0.24);
+}
+
+.control-group input[type='number']:disabled,
+.control-group input[type='text']:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.control-group input[type='color'] {
+  width: 100%;
+  height: 32px;
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(5, 8, 12, 0.7);
+  cursor: pointer;
+}
