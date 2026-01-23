@@ -3,321 +3,13 @@ import { Canvas, useFrame, useThree, extend } from '@react-three/fiber'
 import { Center, Effects, Environment, useGLTF, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import { UnrealBloomPass } from 'three-stdlib'
+import settings from '../pocari-settings.json'
 import './App.css'
 
 extend({ UnrealBloomPass })
 
-const STORAGE_KEY = 'pocari-layer-config'
-const SCENE_STORAGE_KEY = 'pocari-scene-config'
-const REMOVED_LAYER_IDS = new Set(['fog-static', 'cloud-clump'])
-
-const DEFAULT_SCENE_SETTINGS = {
-  maxYawDeg: 3,
-  maxPitchDeg: 3,
-  enabled: true,
-  camX: 0,
-  camY: 0.2,
-  camZ: 7,
-  camRotX: 0,
-  camRotY: 0,
-  camRotZ: 0,
-  camFov: 32,
-  ambientIntensity: 0.3,
-  pivotAuto: true,
-  pivotX: 0,
-  pivotY: 0,
-  pivotZ: 0,
-  lightIntensity: 1.4,
-  lightColor: '#fff3d6',
-  lightX: 8,
-  lightY: 3.5,
-  lightZ: 6,
-  showLightMarker: true,
-  lightMarkerSize: 0.25,
-  spotIntensity: 2,
-  spotColor: '#ffffff',
-  spotX: 4,
-  spotY: 3,
-  spotZ: 3,
-  spotTargetX: 0,
-  spotTargetY: -1.8,
-  spotTargetZ: -3.5,
-  spotAngle: 20,
-  spotPenumbra: 0.35,
-  showSpotMarker: true,
-  spotMarkerSize: 0.2,
-  bloomEnabled: true,
-  bloomStrength: 0.02,
-  bloomRadius: 0,
-  bloomThreshold: 0.98,
-}
-
-const DEFAULT_LAYERS = [
-  {
-    id: 'sky',
-    label: 'Sky',
-    kind: 'image',
-    src: '/clouds/HDR_AboveTheClouds.test.jpg',
-    x: 0,
-    y: 0,
-    z: -12,
-    width: 1,
-    height: 1,
-    opacity: 1,
-    transparent: false,
-    depthWrite: true,
-    alphaTest: 0,
-    renderOrder: -10,
-    autoFit: 'cover',
-    tiltEnabled: true,
-    lit: false,
-  },
-  {
-    id: 'layer0',
-    label: 'Layer 0',
-    kind: 'image',
-    src: '/clouds/layer0.png',
-    x: 0,
-    y: 0,
-    z: 0,
-    width: 1,
-    height: 1,
-    opacity: 1,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0.02,
-    renderOrder: 10,
-    autoFit: 'width',
-    tiltEnabled: true,
-    lit: true,
-    isCloud: true,
-    textureWarp: true,
-    textureWarpStrength: 0.02,
-    textureWarpScale: 1.6,
-    textureWarpSpeed: 0.15,
-    wrapAmount: 0.35,
-    wrapStrength: 0.2,
-    normalStrength: 1.6,
-  },
-  {
-    id: 'layer1',
-    label: 'Layer 1',
-    kind: 'image',
-    src: '/clouds/layer1.png',
-    x: 0,
-    y: 0,
-    z: -2,
-    width: 1,
-    height: 1,
-    opacity: 1,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0.02,
-    renderOrder: 5,
-    autoFit: 'width',
-    tiltEnabled: true,
-    lit: true,
-    isCloud: true,
-    wrapAmount: 0.35,
-    wrapStrength: 0.2,
-    normalStrength: 1.6,
-  },
-  {
-    id: 'layer2',
-    label: 'Layer 2',
-    kind: 'image',
-    src: '/clouds/layer2.png',
-    x: 0,
-    y: 0,
-    z: -4,
-    width: 1,
-    height: 1,
-    opacity: 1,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0.02,
-    renderOrder: 4,
-    autoFit: 'width',
-    tiltEnabled: true,
-    lit: true,
-    isCloud: true,
-    wrapAmount: 0.35,
-    wrapStrength: 0.2,
-    normalStrength: 1.6,
-  },
-  {
-    id: 'fog',
-    label: 'Fog',
-    kind: 'fog',
-    x: 0,
-    y: -0.8,
-    z: -5,
-    width: 10,
-    height: 3.6,
-    opacity: 0.65,
-    fogColor: '#e9eef6',
-    fogSpeed: 0.035,
-    fogMorph: 1.4,
-    fogScale: 0.55,
-    renderOrder: 3,
-    tiltEnabled: true,
-    lit: false,
-  },
-  {
-    id: 'layer3',
-    label: 'Layer 3',
-    kind: 'image',
-    src: '/clouds/layer3.png',
-    x: 0,
-    y: 0,
-    z: -6,
-    width: 1,
-    height: 1,
-    opacity: 1,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0.02,
-    renderOrder: 3,
-    autoFit: 'width',
-    tiltEnabled: true,
-    lit: true,
-    isCloud: true,
-    wrapAmount: 0.35,
-    wrapStrength: 0.2,
-    normalStrength: 1.6,
-  },
-  {
-    id: 'layer4',
-    label: 'Layer 4',
-    kind: 'image',
-    src: '/clouds/layer4.png',
-    x: 0,
-    y: 0,
-    z: -8,
-    width: 1,
-    height: 1,
-    opacity: 1,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0.02,
-    renderOrder: 2,
-    autoFit: 'width',
-    tiltEnabled: true,
-    lit: true,
-    scrollSpeed: 0,
-    scrollRepeat: 1,
-    tileOffset: 0,
-    isCloud: true,
-    wrapAmount: 0.35,
-    wrapStrength: 0.2,
-    normalStrength: 1.6,
-  },
-  {
-    id: 'flare1',
-    label: 'Flare 1',
-    kind: 'image',
-    src: '/flare-1.jpg',
-    x: 3.6,
-    y: 0.6,
-    z: -2.2,
-    width: 1.4,
-    height: 1.4,
-    opacity: 0.55,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0,
-    renderOrder: 50,
-    autoFit: null,
-    tiltEnabled: true,
-    lit: false,
-    blend: 'additive',
-    toneMapped: false,
-  },
-  {
-    id: 'flare2',
-    label: 'Flare 2',
-    kind: 'image',
-    src: '/flare-2.jpg',
-    x: 4.4,
-    y: 0.9,
-    z: -2.6,
-    width: 0.7,
-    height: 0.7,
-    opacity: 0.6,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0,
-    renderOrder: 51,
-    autoFit: null,
-    tiltEnabled: true,
-    lit: false,
-    blend: 'additive',
-    toneMapped: false,
-  },
-  {
-    id: 'flare3',
-    label: 'Flare 3',
-    kind: 'image',
-    src: '/flare-1.jpg',
-    x: 2.9,
-    y: 0.2,
-    z: -2.4,
-    width: 0.9,
-    height: 0.9,
-    opacity: 0.35,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0,
-    renderOrder: 52,
-    autoFit: null,
-    tiltEnabled: true,
-    lit: false,
-    blend: 'additive',
-    toneMapped: false,
-  },
-  {
-    id: 'flare4',
-    label: 'Flare 4',
-    kind: 'image',
-    src: '/flare-1.jpg',
-    x: 5.1,
-    y: 0.5,
-    z: -2.8,
-    width: 0.5,
-    height: 0.5,
-    opacity: 0.25,
-    transparent: true,
-    depthWrite: false,
-    alphaTest: 0,
-    renderOrder: 53,
-    autoFit: null,
-    tiltEnabled: true,
-    lit: false,
-    blend: 'additive',
-    toneMapped: false,
-  },
-  {
-    id: 'building',
-    label: 'Building',
-    kind: 'model',
-    src: '/building.glb',
-    x: 0,
-    y: -1.8,
-    z: -3.5,
-    scale: 2.01,
-    envIntensity: 1.2,
-    rotX: 0,
-    rotY: 214,
-    rotZ: 0,
-    opacity: 1,
-    transparent: false,
-    depthWrite: true,
-    alphaTest: 0,
-    renderOrder: 6,
-    tiltEnabled: true,
-    lit: true,
-  },
-]
+const DEFAULT_SCENE_SETTINGS = settings['pocari-scene-config']
+const DEFAULT_LAYERS = settings['pocari-layer-config']
 
 function useScreenSizeAtDepth(depth) {
   const { camera, size } = useThree()
@@ -1125,65 +817,10 @@ function SubtleBloom({ settings }) {
 
 function App() {
   const [controlsOpen, setControlsOpen] = useState(true)
-  const [layers, setLayers] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (!stored) return DEFAULT_LAYERS
-      const parsed = JSON.parse(stored)
-      if (!Array.isArray(parsed)) return DEFAULT_LAYERS
-      const byId = new Map(parsed.map((layer) => [layer.id, layer]))
-      const merged = DEFAULT_LAYERS.map((layer) => {
-        const storedLayer = byId.get(layer.id)
-        const tileOffset =
-          storedLayer?.tileOffset ??
-          (typeof storedLayer?.scrollOffset === 'number'
-            ? storedLayer.scrollOffset
-            : undefined) ??
-          layer.tileOffset ??
-          0
-        return {
-          ...layer,
-          ...storedLayer,
-          kind: storedLayer?.kind ?? layer.kind ?? 'image',
-          tiltEnabled: storedLayer?.tiltEnabled ?? layer.tiltEnabled ?? true,
-          lit: storedLayer?.lit ?? layer.lit ?? true,
-          blend: storedLayer?.blend ?? layer.blend ?? 'normal',
-          toneMapped: storedLayer?.toneMapped ?? layer.toneMapped,
-          rotX: storedLayer?.rotX ?? layer.rotX ?? 0,
-          rotY: storedLayer?.rotY ?? layer.rotY ?? 0,
-          rotZ: storedLayer?.rotZ ?? layer.rotZ ?? 0,
-          envIntensity:
-            storedLayer?.envIntensity ?? layer.envIntensity ?? 1,
-          tileOffset,
-        }
-      })
-      const extras = parsed.filter(
-        (layer) =>
-          !DEFAULT_LAYERS.some((item) => item.id === layer.id) &&
-          !REMOVED_LAYER_IDS.has(layer.id),
-      )
-      return [
-        ...merged,
-        ...extras.map((layer) => ({
-          kind: layer.kind ?? 'image',
-          lit: layer.lit ?? true,
-          tiltEnabled: layer.tiltEnabled ?? true,
-          blend: layer.blend ?? 'normal',
-          toneMapped: layer.toneMapped,
-          rotX: layer.rotX ?? 0,
-          rotY: layer.rotY ?? 0,
-          rotZ: layer.rotZ ?? 0,
-          envIntensity: layer.envIntensity ?? 1,
-          tileOffset:
-            layer.tileOffset ??
-            (typeof layer.scrollOffset === 'number' ? layer.scrollOffset : 0),
-          ...layer,
-        })),
-      ]
-    } catch {
-      return DEFAULT_LAYERS
-    }
-  })
+  const showControls = false
+  const [layers, setLayers] = useState(() =>
+    DEFAULT_LAYERS.map((layer) => ({ ...layer })),
+  )
 
   const updateLayer = (id, key, value) => {
     setLayers((prevLayers) =>
@@ -1210,112 +847,9 @@ function App() {
     return width / height
   }
 
-  const [sceneSettings, setSceneSettings] = useState(() => {
-    try {
-      const stored = localStorage.getItem(SCENE_STORAGE_KEY)
-      if (!stored) return DEFAULT_SCENE_SETTINGS
-      const parsed = JSON.parse(stored)
-      const asNumber = (value, fallback) =>
-        typeof value === 'number' && Number.isFinite(value) ? value : fallback
-      const asBool = (value, fallback) =>
-        typeof value === 'boolean' ? value : fallback
-      const asString = (value, fallback) =>
-        typeof value === 'string' ? value : fallback
-      return {
-        maxYawDeg: asNumber(parsed.maxYawDeg, DEFAULT_SCENE_SETTINGS.maxYawDeg),
-        maxPitchDeg: asNumber(
-          parsed.maxPitchDeg,
-          DEFAULT_SCENE_SETTINGS.maxPitchDeg,
-        ),
-        enabled: asBool(parsed.enabled, DEFAULT_SCENE_SETTINGS.enabled),
-        camX: asNumber(parsed.camX, DEFAULT_SCENE_SETTINGS.camX),
-        camY: asNumber(parsed.camY, DEFAULT_SCENE_SETTINGS.camY),
-        camZ: asNumber(parsed.camZ, DEFAULT_SCENE_SETTINGS.camZ),
-        camRotX: asNumber(parsed.camRotX, DEFAULT_SCENE_SETTINGS.camRotX),
-        camRotY: asNumber(parsed.camRotY, DEFAULT_SCENE_SETTINGS.camRotY),
-        camRotZ: asNumber(parsed.camRotZ, DEFAULT_SCENE_SETTINGS.camRotZ),
-        camFov: asNumber(parsed.camFov, DEFAULT_SCENE_SETTINGS.camFov),
-        pivotAuto: asBool(
-          parsed.pivotAuto,
-          DEFAULT_SCENE_SETTINGS.pivotAuto,
-        ),
-        pivotX: asNumber(parsed.pivotX, DEFAULT_SCENE_SETTINGS.pivotX),
-        pivotY: asNumber(parsed.pivotY, DEFAULT_SCENE_SETTINGS.pivotY),
-        pivotZ: asNumber(parsed.pivotZ, DEFAULT_SCENE_SETTINGS.pivotZ),
-        ambientIntensity: asNumber(
-          parsed.ambientIntensity,
-          DEFAULT_SCENE_SETTINGS.ambientIntensity,
-        ),
-        lightIntensity: asNumber(
-          parsed.lightIntensity,
-          DEFAULT_SCENE_SETTINGS.lightIntensity,
-        ),
-        lightColor: asString(parsed.lightColor, DEFAULT_SCENE_SETTINGS.lightColor),
-        lightX: asNumber(parsed.lightX, DEFAULT_SCENE_SETTINGS.lightX),
-        lightY: asNumber(parsed.lightY, DEFAULT_SCENE_SETTINGS.lightY),
-        lightZ: asNumber(parsed.lightZ, DEFAULT_SCENE_SETTINGS.lightZ),
-        showLightMarker: asBool(
-          parsed.showLightMarker,
-          DEFAULT_SCENE_SETTINGS.showLightMarker,
-        ),
-        lightMarkerSize: asNumber(
-          parsed.lightMarkerSize,
-          DEFAULT_SCENE_SETTINGS.lightMarkerSize,
-        ),
-        spotIntensity: asNumber(
-          parsed.spotIntensity,
-          DEFAULT_SCENE_SETTINGS.spotIntensity,
-        ),
-        spotColor: asString(parsed.spotColor, DEFAULT_SCENE_SETTINGS.spotColor),
-        spotX: asNumber(parsed.spotX, DEFAULT_SCENE_SETTINGS.spotX),
-        spotY: asNumber(parsed.spotY, DEFAULT_SCENE_SETTINGS.spotY),
-        spotZ: asNumber(parsed.spotZ, DEFAULT_SCENE_SETTINGS.spotZ),
-        spotTargetX: asNumber(
-          parsed.spotTargetX,
-          DEFAULT_SCENE_SETTINGS.spotTargetX,
-        ),
-        spotTargetY: asNumber(
-          parsed.spotTargetY,
-          DEFAULT_SCENE_SETTINGS.spotTargetY,
-        ),
-        spotTargetZ: asNumber(
-          parsed.spotTargetZ,
-          DEFAULT_SCENE_SETTINGS.spotTargetZ,
-        ),
-        spotAngle: asNumber(parsed.spotAngle, DEFAULT_SCENE_SETTINGS.spotAngle),
-        spotPenumbra: asNumber(
-          parsed.spotPenumbra,
-          DEFAULT_SCENE_SETTINGS.spotPenumbra,
-        ),
-        showSpotMarker: asBool(
-          parsed.showSpotMarker,
-          DEFAULT_SCENE_SETTINGS.showSpotMarker,
-        ),
-        spotMarkerSize: asNumber(
-          parsed.spotMarkerSize,
-          DEFAULT_SCENE_SETTINGS.spotMarkerSize,
-        ),
-        bloomEnabled: asBool(
-          parsed.bloomEnabled,
-          DEFAULT_SCENE_SETTINGS.bloomEnabled,
-        ),
-        bloomStrength: asNumber(
-          parsed.bloomStrength,
-          DEFAULT_SCENE_SETTINGS.bloomStrength,
-        ),
-        bloomRadius: asNumber(
-          parsed.bloomRadius,
-          DEFAULT_SCENE_SETTINGS.bloomRadius,
-        ),
-        bloomThreshold: asNumber(
-          parsed.bloomThreshold,
-          DEFAULT_SCENE_SETTINGS.bloomThreshold,
-        ),
-      }
-    } catch {
-      return DEFAULT_SCENE_SETTINGS
-    }
-  })
+  const [sceneSettings, setSceneSettings] = useState(() => ({
+    ...DEFAULT_SCENE_SETTINGS,
+  }))
 
   const handleAutoFit = (id, updates) => {
     setLayers((prevLayers) =>
@@ -1381,24 +915,10 @@ function App() {
     [layers],
   )
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(layers))
-    } catch {
-      // Ignore storage failures (private mode, quota, etc.)
-    }
-  }, [layers])
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(SCENE_STORAGE_KEY, JSON.stringify(sceneSettings))
-    } catch {
-      // Ignore storage failures (private mode, quota, etc.)
-    }
-  }, [sceneSettings])
-
   return (
     <div className="app">
+      {showControls ? (
+        <>
       <button
         type="button"
         className="controls-toggle"
@@ -1407,6 +927,21 @@ function App() {
         {controlsOpen ? 'Hide settings' : 'Show settings'}
       </button>
       <div className={`controls${controlsOpen ? '' : ' controls--hidden'}`}>
+        <details className="control-group">
+          <summary>
+            <span className="control-title">Storage</span>
+            <span className="control-subtitle">export</span>
+          </summary>
+          <div className="control-fields">
+            <button
+              type="button"
+              className="control-button"
+              onClick={handleExportSettings}
+            >
+              Export settings
+            </button>
+          </div>
+        </details>
         <details className="control-group">
           <summary>
             <span className="control-title">Scene</span>
@@ -2485,6 +2020,8 @@ function App() {
           </details>
         ))}
       </div>
+        </>
+      ) : null}
       <Canvas
         camera={{
           position: [sceneSettings.camX, sceneSettings.camY, sceneSettings.camZ],
