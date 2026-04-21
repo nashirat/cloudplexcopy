@@ -36,61 +36,61 @@ const ChromaticAberrationShader = {
 // =============================================================================
 const DEFAULTS = {
   // Surface
-  size:            3.0,
-  distortionScale: 3.0,    // very calm water — minimal reflection breakup
-  waveSpeed:       0.08,
-  waveHeight:      0.3,    // calm arctic water — small swells only
+  size:            3,
+  distortionScale: 3,
+  waveSpeed:       0.35,
+  waveHeight:      0.3,
   waveScaleVS:     0.04,
-  reflBlur:        0.01,   // sharper reflection for mirror-like icy water
-  capillaryScale:    25,   // higher = tighter ripples (real wave detail)
-  capillaryStrength: 0.5,  // strength of normal perturbation (0..1)
-  capillaryDrift:    0.04, // wind/animation speed of capillary chaos
+  reflBlur:        0.145,
+  capillaryScale:    95,
+  capillaryStrength: 0.14,
+  capillaryDrift:    0.11,
   // Ripple (concentric rings from a point — placeholder for object impact)
   rippleX:         0,
   rippleZ:        20,
-  rippleStrength:  0.0,
+  rippleStrength:  0,
   rippleFreq:      1.2,
-  rippleSpeed:     6.0,
+  rippleSpeed:     6,
   rippleDecay:     0.03,
   rippleRadius:    80,
-  centerPeakHeight:    0.0,
+  centerPeakHeight:    0,
   centerPeakSharpness: 0.15,
   sphereRadius:    1.5,
   sphereColor:     '#a8cce0',
   // Fine grain (tiny freckle-like ripples overlay)
-  grainScale:      16.0,
+  grainScale:      16,
   grainStrength:   0.3,
   // Dimples (very fine tight bump structure)
-  dimpleScale:     40.0,
+  dimpleScale:     40,
   dimpleStrength:  0.5,
   // Crest highlights (small whitecaps covering the surface)
   crestStrength:   0.35,
   crestThreshold:  0.35,
   crestSharpness:  0.25,
   crestColor:      '#d8e5ec',
-  alpha:           1.0,
+  alpha:           1,
   // Layered water color
   shallowColor:    '#5c7a8a',
   deepColor:       '#2a4050',
   transColor:      '#8aa8b8',
-  colorDepth:      5.0,
+  colorDepth:      1.4,
   waterAmbient:    0.75,
-  // Reflection — more mirror-like for icy calm water
-  reflStrength:   0.95,
-  reflBase:       0.08,
-  reflAmbient:    0.0,
-  fresnelPower:   4.0,
-  scatterMix:     1.0,
+  // Reflection
+  reflStrength:   0.74,
+  reflBase:       0.33,
+  reflAmbient:    0,
+  fresnelPower:   7,
+  scatterMix:     1,
   // Sun
-  sunAzimuth:    315,
-  sunElevation:   38,
+  sunAzimuth:    246,
+  sunElevation:   6,
   sunColor:     '#fff5d8',
-  sunDiskSize:    180,
-  sunIntensity:   1.4,
-  specStrength:   0.2,
-  specShininess: 800.0,
+  sunDiskSize:    105,
+  sunIntensity:   0.85,
+  specStrength:   0.45,
+  specShininess:  85,
   // Camera
-  cameraHeight:   8,
+  cameraHeight:   6.5,
   fov:            45,
   // Renderer
   exposure:       0.95,
@@ -438,6 +438,17 @@ export default function WaterDone1Page() {
     localStorage.removeItem(STORAGE_KEY)
     setParams(DEFAULTS)
   }
+  const exportConfig = () => {
+    const blob = new Blob([JSON.stringify(params, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `waterdone1-config-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
 
   // Refs holding live Three.js objects so the params effect can update them.
   const refs = useRef({
@@ -721,8 +732,8 @@ export default function WaterDone1Page() {
     <div className="latestwater-page">
       <div className="latestwater-stage" ref={containerRef} />
       <div className="latestwater-panel">
-        <div className="group">
-          <h3>Surface</h3>
+        <details className="group" open>
+          <summary>Surface</summary>
           <Slider label="Size"        value={params.size}            min={0.3}  max={5}    step={0.05} onChange={set('size')}            fmt={(v) => v.toFixed(2)} />
           <Slider label="Distortion"  value={params.distortionScale} min={0}    max={10}   step={0.1}  onChange={set('distortionScale')} fmt={(v) => v.toFixed(1)} />
           <Slider label="Wave speed"  value={params.waveSpeed}       min={0}    max={3}    step={0.05} onChange={set('waveSpeed')}       fmt={(v) => v.toFixed(2)} />
@@ -730,19 +741,19 @@ export default function WaterDone1Page() {
           <Slider label="Wave scale"  value={params.waveScaleVS}     min={0.005} max={0.2} step={0.005} onChange={set('waveScaleVS')}    fmt={(v) => v.toFixed(3)} />
           <Slider label="Alpha"       value={params.alpha}           min={0}    max={1}    step={0.01} onChange={set('alpha')}           fmt={(v) => v.toFixed(2)} />
           <Slider label="Body mix"    value={params.scatterMix}      min={0}    max={2}    step={0.05} onChange={set('scatterMix')}      fmt={(v) => v.toFixed(2)} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Colors</h3>
+        <details className="group" open>
+          <summary>Colors</summary>
           <ColorRow label="Shallow"   value={params.shallowColor}                                        onChange={set('shallowColor')} />
           <ColorRow label="Deep"      value={params.deepColor}                                           onChange={set('deepColor')} />
           <ColorRow label="Transmit"  value={params.transColor}                                          onChange={set('transColor')} />
           <Slider label="Color depth" value={params.colorDepth}      min={0.2}  max={10}   step={0.1}  onChange={set('colorDepth')}      fmt={(v) => v.toFixed(1)} />
           <Slider label="Ambient"     value={params.waterAmbient}    min={0}    max={2}    step={0.05} onChange={set('waterAmbient')}    fmt={(v) => v.toFixed(2)} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Reflection</h3>
+        <details className="group" open>
+          <summary>Reflection</summary>
           <Slider label="Strength"    value={params.reflStrength}    min={0}    max={2}    step={0.02} onChange={set('reflStrength')}    fmt={(v) => v.toFixed(2)} />
           <Slider label="Min (R0)"    value={params.reflBase}        min={0}    max={1}    step={0.01} onChange={set('reflBase')}        fmt={(v) => v.toFixed(2)} />
           <Slider label="Ambient"     value={params.reflAmbient}     min={0}    max={0.4}  step={0.005} onChange={set('reflAmbient')}    fmt={(v) => v.toFixed(3)} />
@@ -751,13 +762,10 @@ export default function WaterDone1Page() {
           <Slider label="Cap scale"   value={params.capillaryScale}    min={10}   max={400}  step={5}    onChange={set('capillaryScale')}    fmt={(v) => v.toFixed(0)} />
           <Slider label="Cap str"     value={params.capillaryStrength} min={0}    max={2}    step={0.01} onChange={set('capillaryStrength')} fmt={(v) => v.toFixed(2)} />
           <Slider label="Cap drift"   value={params.capillaryDrift}    min={0}    max={1}    step={0.005} onChange={set('capillaryDrift')}   fmt={(v) => v.toFixed(3)} />
+        </details>
 
-
-
-        </div>
-
-        <div className="group">
-          <h3>Sun</h3>
+        <details className="group" open>
+          <summary>Sun</summary>
           <Slider label="Azimuth"     value={params.sunAzimuth}      min={0}    max={360}  step={1}    onChange={set('sunAzimuth')}      fmt={(v) => `${v.toFixed(0)}°`} />
           <Slider label="Elevation"   value={params.sunElevation}    min={0}    max={90}   step={1}    onChange={set('sunElevation')}    fmt={(v) => `${v.toFixed(0)}°`} />
           <Slider label="Disk size"   value={params.sunDiskSize}     min={20}   max={500}  step={5}    onChange={set('sunDiskSize')}     fmt={(v) => v.toFixed(0)} />
@@ -765,17 +773,17 @@ export default function WaterDone1Page() {
           <Slider label="Spec str"    value={params.specStrength}    min={0}    max={6}    step={0.05} onChange={set('specStrength')}    fmt={(v) => v.toFixed(2)} />
           <Slider label="Spec sharp"  value={params.specShininess}   min={5}    max={500}  step={5}    onChange={set('specShininess')}   fmt={(v) => v.toFixed(0)} />
           <ColorRow label="Color"     value={params.sunColor}                                            onChange={set('sunColor')} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Camera & Render</h3>
+        <details className="group" open>
+          <summary>Camera & Render</summary>
           <Slider label="Cam height"  value={params.cameraHeight}    min={1}    max={30}   step={0.5}  onChange={set('cameraHeight')}    fmt={(v) => v.toFixed(1)} />
           <Slider label="FOV"         value={params.fov}             min={25}   max={90}   step={1}    onChange={set('fov')}             fmt={(v) => `${v.toFixed(0)}°`} />
           <Slider label="Exposure"    value={params.exposure}        min={0.3}  max={2}    step={0.05} onChange={set('exposure')}        fmt={(v) => v.toFixed(2)} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Ripple</h3>
+        <details className="group">
+          <summary>Ripple</summary>
           <Slider label="X"           value={params.rippleX}         min={-100} max={100}  step={0.5}  onChange={set('rippleX')}         fmt={(v) => v.toFixed(1)} />
           <Slider label="Z"           value={params.rippleZ}         min={-100} max={100}  step={0.5}  onChange={set('rippleZ')}         fmt={(v) => v.toFixed(1)} />
           <Slider label="Strength"    value={params.rippleStrength}  min={0}    max={5}    step={0.05} onChange={set('rippleStrength')}  fmt={(v) => v.toFixed(2)} />
@@ -785,38 +793,39 @@ export default function WaterDone1Page() {
           <Slider label="Radius"      value={params.rippleRadius}    min={5}    max={300}  step={1}    onChange={set('rippleRadius')}    fmt={(v) => v.toFixed(0)} />
           <Slider label="Peak ht"     value={params.centerPeakHeight}    min={0}    max={10}   step={0.1}  onChange={set('centerPeakHeight')}    fmt={(v) => v.toFixed(1)} />
           <Slider label="Peak sharp"  value={params.centerPeakSharpness} min={0.01} max={1}    step={0.01} onChange={set('centerPeakSharpness')} fmt={(v) => v.toFixed(2)} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Grain</h3>
+        <details className="group">
+          <summary>Grain</summary>
           <Slider label="Scale"       value={params.grainScale}      min={1}    max={60}   step={0.5}  onChange={set('grainScale')}      fmt={(v) => v.toFixed(1)} />
           <Slider label="Strength"    value={params.grainStrength}   min={0}    max={3}    step={0.05} onChange={set('grainStrength')}   fmt={(v) => v.toFixed(2)} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Dimples</h3>
+        <details className="group">
+          <summary>Dimples</summary>
           <Slider label="Scale"       value={params.dimpleScale}     min={5}    max={120}  step={1}    onChange={set('dimpleScale')}     fmt={(v) => v.toFixed(0)} />
           <Slider label="Strength"    value={params.dimpleStrength}  min={0}    max={2}    step={0.05} onChange={set('dimpleStrength')}  fmt={(v) => v.toFixed(2)} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Crests</h3>
+        <details className="group">
+          <summary>Crests</summary>
           <Slider label="Strength"    value={params.crestStrength}   min={0}    max={1}    step={0.01} onChange={set('crestStrength')}   fmt={(v) => v.toFixed(2)} />
           <Slider label="Threshold"   value={params.crestThreshold}  min={0}    max={1}    step={0.01} onChange={set('crestThreshold')}  fmt={(v) => v.toFixed(2)} />
           <Slider label="Sharpness"   value={params.crestSharpness}  min={0.01} max={1}    step={0.01} onChange={set('crestSharpness')}  fmt={(v) => v.toFixed(2)} />
           <ColorRow label="Color"     value={params.crestColor}                                        onChange={set('crestColor')} />
-        </div>
+        </details>
 
-        <div className="group">
-          <h3>Post FX</h3>
+        <details className="group">
+          <summary>Post FX</summary>
           <Slider label="Bloom str"   value={params.bloomStrength}   min={0}    max={3}    step={0.05} onChange={set('bloomStrength')}   fmt={(v) => v.toFixed(2)} />
           <Slider label="Bloom rad"   value={params.bloomRadius}     min={0}    max={1}    step={0.01} onChange={set('bloomRadius')}     fmt={(v) => v.toFixed(2)} />
           <Slider label="Bloom thr"   value={params.bloomThreshold}  min={0}    max={1}    step={0.01} onChange={set('bloomThreshold')}  fmt={(v) => v.toFixed(2)} />
           <Slider label="CA"          value={params.caStrength}      min={0}    max={0.02} step={0.0005} onChange={set('caStrength')}    fmt={(v) => v.toFixed(4)} />
-        </div>
+        </details>
 
         <div className="group" style={{ display: 'flex', gap: 8 }}>
           <button onClick={saveConfig} style={{ flex: 1, padding: '6px 10px', background: '#2a4a6e', color: '#e8eef5', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}>Save Config</button>
+          <button onClick={exportConfig} style={{ flex: 1, padding: '6px 10px', background: '#2a6e4a', color: '#e8eef5', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}>Export JSON</button>
           <button onClick={resetConfig} style={{ flex: 1, padding: '6px 10px', background: '#3a2a2a', color: '#e8eef5', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}>Reset</button>
         </div>
       </div>
