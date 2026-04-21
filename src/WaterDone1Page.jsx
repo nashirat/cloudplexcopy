@@ -423,6 +423,7 @@ function ColorRow({ label, value, onChange }) {
 // =============================================================================
 export default function WaterDone1Page() {
   const containerRef = useRef(null)
+  const fpsRef = useRef(null)
   const STORAGE_KEY = 'waterdone1-config'
   const [panelVisible, setPanelVisible] = useState(true)
   const [params, setParams] = useState(() => {
@@ -610,6 +611,8 @@ export default function WaterDone1Page() {
     // Render loop.
     const clock = new THREE.Clock()
     let raf = 0
+    let fpsFrames = 0
+    let fpsAccum = 0
     const tick = () => {
       const delta = clock.getDelta()
       // Read latest waveSpeed from the live params via ref-style dance:
@@ -621,6 +624,13 @@ export default function WaterDone1Page() {
       const speed = water.material.userData.speed ?? DEFAULTS.waveSpeed
       water.material.uniforms.time.value += delta * speed
       composer.render()
+      fpsFrames++
+      fpsAccum += delta
+      if (fpsAccum >= 0.5 && fpsRef.current) {
+        fpsRef.current.textContent = `${(fpsFrames / fpsAccum).toFixed(0)} FPS`
+        fpsFrames = 0
+        fpsAccum = 0
+      }
       raf = requestAnimationFrame(tick)
     }
     tick()
@@ -739,6 +749,7 @@ export default function WaterDone1Page() {
       >
         {panelVisible ? '✕' : '☰'}
       </button>
+      <div className="latestwater-fps" ref={fpsRef}>— FPS</div>
       {panelVisible && (
       <div className="latestwater-panel">
         <details className="group" open>
