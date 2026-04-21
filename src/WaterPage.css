@@ -1,0 +1,12 @@
+.water-page {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #d6dbe5;
+}
+
+.water-page canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

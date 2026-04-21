@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -o '\\\\`[^`]*gl_FragColor[^`]*\\\\`' /mnt/d/Projects/pocari/App3D-5907d20f.js)",
+      "Bash(grep -n \"vertexShader:\\\\`\\\\|fragmentShader:\\\\`\" /mnt/d/Projects/pocari/App3D-5907d20f.js)",
+      "Skill(update-config)",
+      "Bash(node *)",
+      "Bash(grep -o '\\\\`[^`]*precision[^`]*\\\\`' /mnt/d/Projects/pocari/App3D-5907d20f.js)"
+    ]
+  }
+}

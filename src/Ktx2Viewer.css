@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Sora:wght@400;600&display=swap');
+
+.ktx2-page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 18px;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(69, 86, 115, 0.35), transparent 55%),
+    radial-gradient(circle at 80% 10%, rgba(42, 57, 82, 0.5), transparent 55%),
+    linear-gradient(160deg, #10141b, #0d121a 60%, #0b0f16);
+  color: #e6edf5;
+  font-family: 'Sora', 'Space Grotesk', sans-serif;
+}
+
+.ktx2-page--dragging .ktx2-canvas::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ktx2-page--loaded .ktx2-canvas::after {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.ktx2-panel {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(12, 16, 22, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px rgba(2, 4, 8, 0.4);
+}
+
+.ktx2-kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(235, 242, 250, 0.6);
+}
+
+.ktx2-title {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.ktx2-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.ktx2-upload input {
+  display: none;
+}
+
+.ktx2-meta {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.ktx2-meta span {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(235, 242, 250, 0.6);
+}
+
+.ktx2-meta strong {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  color: #f0f6ff;
+}
+
+.ktx2-error {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(190, 74, 74, 0.15);
+  color: #ffb6b6;
+  font-size: 11px;
+}
+
+.ktx2-hint {
+  font-size: 11px;
+  color: rgba(235, 242, 250, 0.55);
+}
+
+.ktx2-controls {
+  display: grid;
+  gap: 10px;
+}
+
+.ktx2-controls label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(235, 242, 250, 0.7);
+}
+
+.ktx2-controls select {
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(22, 28, 38, 0.9);
+  color: #f2f6fb;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: 'Space Mono', monospace;
+}
+
+.ktx2-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.ktx2-canvas {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(9, 12, 18, 0.8);
+}
+
+.ktx2-canvas::after {
+  content: 'Drop a .ktx2 file';
+  position: absolute;
+  inset: 24px;
+  border-radius: 16px;
+  border: 1px dashed rgba(235, 242, 250, 0.2);
+  display: grid;
+  place-items: center;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+  color: rgba(235, 242, 250, 0.6);
+  opacity: 0.3;
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .ktx2-page {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
