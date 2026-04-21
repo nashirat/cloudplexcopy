@@ -38,13 +38,13 @@ const DEFAULTS = {
   // Surface
   size:            3,
   distortionScale: 3,
-  waveSpeed:       0.35,
+  waveSpeed:       0.25,
   waveHeight:      0.3,
   waveScaleVS:     0.04,
-  reflBlur:        0.145,
+  reflBlur:        0.255,
   capillaryScale:    95,
-  capillaryStrength: 0.14,
-  capillaryDrift:    0.11,
+  capillaryStrength: 0.3,
+  capillaryDrift:    0.105,
   // Ripple (concentric rings from a point — placeholder for object impact)
   rippleX:         0,
   rippleZ:        20,
@@ -73,22 +73,22 @@ const DEFAULTS = {
   shallowColor:    '#5c7a8a',
   deepColor:       '#2a4050',
   transColor:      '#8aa8b8',
-  colorDepth:      1.4,
+  colorDepth:      5,
   waterAmbient:    0.75,
   // Reflection
-  reflStrength:   0.74,
-  reflBase:       0.33,
+  reflStrength:   0.92,
+  reflBase:       0,
   reflAmbient:    0,
-  fresnelPower:   7,
-  scatterMix:     1,
+  fresnelPower:   8.6,
+  scatterMix:     0.35,
   // Sun
-  sunAzimuth:    246,
-  sunElevation:   6,
-  sunColor:     '#fff5d8',
-  sunDiskSize:    105,
-  sunIntensity:   0.85,
-  specStrength:   0.45,
-  specShininess:  85,
+  sunAzimuth:    243,
+  sunElevation:   4,
+  sunColor:     '#ffffff',
+  sunDiskSize:    100,
+  sunIntensity:   1.4,
+  specStrength:   0.2,
+  specShininess:  385,
   // Camera
   cameraHeight:   6.5,
   fov:            45,
@@ -424,6 +424,7 @@ function ColorRow({ label, value, onChange }) {
 export default function WaterDone1Page() {
   const containerRef = useRef(null)
   const STORAGE_KEY = 'waterdone1-config'
+  const [panelVisible, setPanelVisible] = useState(true)
   const [params, setParams] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
@@ -731,6 +732,14 @@ export default function WaterDone1Page() {
   return (
     <div className="latestwater-page">
       <div className="latestwater-stage" ref={containerRef} />
+      <button
+        className="latestwater-toggle"
+        onClick={() => setPanelVisible((v) => !v)}
+        title={panelVisible ? 'Hide panel' : 'Show panel'}
+      >
+        {panelVisible ? '✕' : '☰'}
+      </button>
+      {panelVisible && (
       <div className="latestwater-panel">
         <details className="group" open>
           <summary>Surface</summary>
@@ -829,6 +838,7 @@ export default function WaterDone1Page() {
           <button onClick={resetConfig} style={{ flex: 1, padding: '6px 10px', background: '#3a2a2a', color: '#e8eef5', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}>Reset</button>
         </div>
       </div>
+      )}
     </div>
   )
 }

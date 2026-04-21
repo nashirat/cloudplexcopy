@@ -1,229 +1,55 @@
 {
-  "caustics": {
-    "enabled": true,
-    "surface": {
-      "strength": 0.35,
-      "scale": 0.02,
-      "speed": 0.25
-    }
-  },
-  "clipmap": {
-    "levels": 4,
-    "segments": 64,
-    "baseSize": 400
-  },
-  "color": {
-    "alpha": 1,
-    "deepWaterColor": "#152535",
-    "depthFalloff": 45,
-    "shallowWaterColor": "#263a42",
-    "transmissionColor": "#719cb8"
-  },
-  "foam": {
-    "surface": {
-      "enabled": true,
-      "opacity": 0.85,
-      "color": "#ffffff",
-      "size": 134,
-      "coverage": 0.11,
-      "texture": "foam1.jpg"
-    },
-    "waves": {
-      "enabled": false,
-      "opacity": 0.25,
-      "color": "#ffffff",
-      "size": 150,
-      "coverage": 0.25,
-      "peakIntensity": 0.35,
-      "windStretch": 0.3,
-      "crestCoverage": 0.35,
-      "windBias": 0.45,
-      "waveWeight": 1,
-      "rippleWeight": 0.7,
-      "texture": "foam3.jpg"
-    },
-    "shoreline": {
-      "enabled": true,
-      "opacity": 0.45,
-      "size": 178,
-      "coverage": 0.69,
-      "range": 87,
-      "color": "#edf9fd",
-      "texture": "foam3.jpg"
-    },
-    "wake": {
-      "enabled": true,
-      "decayRate": 0.15,
-      "opacity": 0.5,
-      "color": "#edf9fd",
-      "size": 67,
-      "coverage": 1,
-      "stampScale": 2,
-      "texture": "foam3.jpg"
-    }
-  },
-  "fog": {
-    "enabled": true,
-    "fadePower": 1,
-    "fadeStart": 1200
-  },
-  "fresnel": {
-    "surface": {
-      "power": 3.5,
-      "normalStrength": 0.95,
-      "fadeStart": 0,
-      "fadePower": 0.6
-    },
-    "underwater": {
-      "waterAbsorption": 0.72,
-      "refractionIOR": 1.12,
-      "refractionStrength": 0.35,
-      "reflectionStrength": 0.45,
-      "normalStrength": 1.3
-    }
-  },
-  "oceanFloor": {
-    "blendSoftness": 0.3,
-    "blendThreshold": 0.5,
-    "depth": 100,
-    "displacementScale": 140,
-    "displacementStrength": 8,
-    "enabled": true,
-    "lacunarity": 1.8,
-    "meshResolution": 64,
-    "normalScale": 0.2,
-    "persistence": 0.75,
-    "textureDisplacementStrength": 0.5,
-    "tileSize": 400,
-    "caustics": {
-      "depthAttenuation": 0.5,
-      "enabled": true,
-      "intensity": 0.6,
-      "sampleEpsilon": 2
-    },
-    "sunShafts": {
-      "enabled": true,
-      "intensity": 0.2
-    },
-    "surfaceGlow": {
-      "color": "#fff8e0",
-      "enabled": true,
-      "focusPower": 75.7,
-      "intensity": 5.81
-    }
-  },
-  "postProcessing": {
-    "enabled": false,
-    "bloom": {
-      "enabled": true,
-      "strength": 0.4,
-      "radius": 0.4,
-      "threshold": 0.85
-    },
-    "filmGrain": {
-      "enabled": true,
-      "intensity": 0.2
-    },
-    "vignette": {
-      "enabled": true,
-      "intensity": 0.3,
-      "smoothness": 0.8
-    },
-    "underwater": {
-      "enabled": true,
-      "fogDensity": 0.012,
-      "distortionEnabled": true,
-      "distortionIntensity": 0.018,
-      "distortionSpeed": 1.3,
-      "distortionScale": 4
-    },
-    "underwaterParticles": {
-      "color": "#ffffff",
-      "count": 1000,
-      "enabled": true,
-      "farDistance": 209,
-      "maxSize": 0.5,
-      "minSize": 0.1,
-      "nearDistance": 9,
-      "opacity": 0.5
-    }
-  },
-  "sky": {
-    "atmosphere": {
-      "mieCoefficient": 0.006,
-      "mieDirectionalG": 0.65,
-      "rayleighCoefficient": 0.8,
-      "skyBrightness": 0.74,
-      "skyColor": "#6b737b",
-      "turbidity": 2.5
-    },
-    "clouds": {
-      "color": "#d0d5dd",
-      "coverage": 0.65,
-      "enabled": true,
-      "height": 0.04,
-      "intensity": 1.3,
-      "lacunarity": 2,
-      "octaves": 4,
-      "opacityFalloff": 0.35,
-      "persistence": 0.5,
-      "scale": 0.0009,
-      "shadowColor": "#707580",
-      "speed": 0.018,
-      "thickness": 1.2
-    },
-    "sun": {
-      "azimuth": 265,
-      "diskColor": "#fffef5",
-      "diskEmissiveColor": "#fff8e0",
-      "diskEmissiveIntensity": 2,
-      "diskRadius": 0.015,
-      "elevation": 85,
-      "intensity": 1.5
-    }
-  },
-  "sparkle": {
-    "enabled": true,
-    "fadeDistance": 1650,
-    "intensity": 1,
-    "minDistance": 0,
-    "power": 960
-  },
-  "ssr": {
-    "enabled": true,
-    "strength": 0.9
-  },
-  "sss": {
-    "enabled": true,
-    "intensity": 0.5,
-    "power": 2.8
-  },
-  "waves": {
-    "fft": {
-      "amplitude": 0.36,
-      "frequency": 1,
-      "animationSpeed": 1.7,
-      "windSpeed": 7.2,
-      "windDirection": 0,
-      "choppiness": 1.2,
-      "directionalSpreading": 1,
-      "standingWaveRatio": 0.35,
-      "cascades": {
-        "ripples": {
-          "scale": 249,
-          "amplitudeScale": 0.28
-        },
-        "waves": {
-          "scale": 1356,
-          "amplitudeScale": 0.24
-        }
-      }
-    },
-    "gerstner": {
-      "wavelength": 700,
-      "amplitude": 3,
-      "wavelengthSpread": 2.2,
-      "directionalSpread": 1
-    }
-  }
+  "size": 3,
+  "distortionScale": 3,
+  "waveSpeed": 0.25,
+  "waveHeight": 0.3,
+  "waveScaleVS": 0.04,
+  "reflBlur": 0.255,
+  "capillaryScale": 95,
+  "capillaryStrength": 0.3,
+  "capillaryDrift": 0.105,
+  "rippleX": 0,
+  "rippleZ": 20,
+  "rippleStrength": 0,
+  "rippleFreq": 1.2,
+  "rippleSpeed": 6,
+  "rippleDecay": 0.03,
+  "rippleRadius": 80,
+  "centerPeakHeight": 0,
+  "centerPeakSharpness": 0.15,
+  "sphereRadius": 1.5,
+  "sphereColor": "#a8cce0",
+  "grainScale": 16,
+  "grainStrength": 0.3,
+  "dimpleScale": 40,
+  "dimpleStrength": 0.5,
+  "crestStrength": 0.35,
+  "crestThreshold": 0.35,
+  "crestSharpness": 0.25,
+  "crestColor": "#d8e5ec",
+  "alpha": 1,
+  "shallowColor": "#5c7a8a",
+  "deepColor": "#2a4050",
+  "transColor": "#8aa8b8",
+  "colorDepth": 5,
+  "waterAmbient": 0.75,
+  "reflStrength": 0.92,
+  "reflBase": 0,
+  "reflAmbient": 0,
+  "fresnelPower": 8.6,
+  "scatterMix": 0.35,
+  "sunAzimuth": 243,
+  "sunElevation": 4,
+  "sunColor": "#ffffff",
+  "sunDiskSize": 100,
+  "sunIntensity": 1.4,
+  "specStrength": 0.2,
+  "specShininess": 385,
+  "cameraHeight": 6.5,
+  "fov": 45,
+  "exposure": 0.95,
+  "bloomStrength": 0.6,
+  "bloomRadius": 0.5,
+  "bloomThreshold": 0.85,
+  "caStrength": 0.0015
 }

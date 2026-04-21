@@ -15,6 +15,7 @@ html, body, #root { margin: 0; padding: 0; height: 100%; background: #000; overf
   width: 380px;
   min-width: 280px;
   max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px);
   background: rgba(18, 22, 28, 0.85);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -25,7 +26,8 @@ html, body, #root { margin: 0; padding: 0; height: 100%; background: #000; overf
   color: #d8dde3;
   z-index: 10;
   resize: horizontal;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .latestwater-panel summary {
   margin: 0 0 8px;
@@ -110,3 +112,24 @@ html, body, #root { margin: 0; padding: 0; height: 100%; background: #000; overf
   cursor: pointer;
   padding: 0;
 }
+.latestwater-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(18, 22, 28, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #d8dde3;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 11;
+  padding: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+.latestwater-toggle:hover { background: rgba(30, 40, 54, 0.95); }
