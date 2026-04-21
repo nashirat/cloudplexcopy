@@ -87,8 +87,8 @@ const DEFAULTS = {
   sunColor:     '#ffffff',
   sunDiskSize:    100,
   sunIntensity:   1.4,
-  specStrength:   0.2,
-  specShininess:  385,
+  specStrength:   0.1,
+  specShininess:  70,
   // Camera
   cameraHeight:   6.5,
   fov:            45,
