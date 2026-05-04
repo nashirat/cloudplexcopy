@@ -217,6 +217,8 @@ const DYSON_RING_MOTION = [
   },
 ]
 
+const ENVIRONMENT_STONE_TEXTURE_URL = '/assets/Textures/stone-71_diffuse%20-%20Edit%202.png'
+
 // Patched vertex shader — actually displaces the water surface up/down based on
 // noise so the plane has real wave geometry. Without this, the surface is flat
 // and only normal-mapped, which always reads as "just a textured plane".
@@ -925,6 +927,11 @@ export default function WaterDone1Page() {
     scene.add(water)
 
     const gltfLoader = new GLTFLoader()
+    const environmentStoneTexture = new THREE.TextureLoader().load(ENVIRONMENT_STONE_TEXTURE_URL)
+    environmentStoneTexture.colorSpace = THREE.SRGBColorSpace
+    environmentStoneTexture.wrapS = THREE.RepeatWrapping
+    environmentStoneTexture.wrapT = THREE.RepeatWrapping
+    environmentStoneTexture.anisotropy = Math.min(renderer.capabilities.getMaxAnisotropy(), 8)
 
     // Environment — authored ice blocks, rocks, and background scene.
     const environmentGroup = new THREE.Group()
@@ -946,6 +953,8 @@ export default function WaterDone1Page() {
         const materials = Array.isArray(child.material) ? child.material : [child.material]
         materials.forEach((material) => {
           if (!material) return
+          material.map = environmentStoneTexture
+          material.color.set(0xffffff)
           material.envMapIntensity = Math.min(material.envMapIntensity ?? 1, 0.35)
           material.roughness = Math.max(material.roughness ?? 0.5, 0.72)
           material.metalness = Math.min(material.metalness ?? 0, 0.02)
