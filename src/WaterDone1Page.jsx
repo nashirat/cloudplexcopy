@@ -1093,7 +1093,7 @@ export default function WaterDone1Page() {
           const cycle = (dt / Math.max(ud.openTime ?? 1, 0.01) + ud.phase / (Math.PI * 2)) % 1
           const easing = Math.max(ud.openEasing ?? 2.4, 0.01)
           const holdClosed = 0.42
-          const openEnd = 0.97
+          const openEnd = 0.92
           const openCycle = cycle < holdClosed
             ? 0
             : cycle < openEnd

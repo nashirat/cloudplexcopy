@@ -12,6 +12,7 @@ import RealBlurPage from './RealBlurPage.jsx'
 import WaterSmallPage from './WaterSmallPage.jsx'
 
 const path = window.location.pathname
+const isHomeRoute = path === '/'
 const isIgloo2Route = path === '/igloo2' || path.startsWith('/igloo2/')
 const isIglooRoute = path === '/igloo' || path.startsWith('/igloo/')
 const isKtx2Route = path === '/ktx2viewer' || path.startsWith('/ktx2viewer/')
@@ -21,7 +22,9 @@ const isWaterDone1Route = path === '/waterdone1' || path.startsWith('/waterdone1
 const isRealBlurRoute = path === '/realblur' || path.startsWith('/realblur/')
 const isWaterSmallRoute = path === '/watersmall' || path.startsWith('/watersmall/')
 
-const RootComponent = isKtx2Route
+const RootComponent = isHomeRoute
+  ? WaterDone1Page
+  : isKtx2Route
   ? Ktx2Viewer
   : isWaterSmallRoute
     ? WaterSmallPage
