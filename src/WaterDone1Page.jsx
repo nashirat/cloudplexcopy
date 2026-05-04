@@ -22,6 +22,7 @@ const ChromaticAberrationShader = {
     }`,
 }
 
+
 // /latestwater — Three.js Water class + cubemap sky + visible sun, with
 // a live tuning panel. The Three.js Water shader gives us non-repeating
 // surface ripples (single tileable normal map sampled at 4 scales/offsets
@@ -33,68 +34,72 @@ const ChromaticAberrationShader = {
 // effect and held in refs so the param-update effect can poke them.
 
 // =============================================================================
-// Defaults — tuned to roughly match waterpro's tropical look on first paint.
+// Defaults — copied from latest.json exported slider values.
 // =============================================================================
 const DEFAULTS = {
-  // Surface
-  size:            3,
-  distortionScale: 3,
-  waveSpeed:       0.25,
-  waveHeight:      0.3,
-  waveScaleVS:     0.04,
-  reflBlur:        0.255,
-  capillaryScale:    95,
+  size: 5,
+  distortionScale: 10,
+  waveSpeed: 0.4,
+  waveHeight: 0.2,
+  waveScaleVS: 0.035,
+  waterCutoffZ: -1000,
+  waterCutoffSoftness: 25,
+  reflBlur: 0.255,
+  capillaryScale: 95,
   capillaryStrength: 0.3,
-  capillaryDrift:    0.105,
-  // Ripple (uneven concentric water disturbance from a point)
-  rippleX:         0,
-  rippleZ:        35,
-  rippleStrength:  2.1,
-  rippleFreq:      0.55,
-  rippleSpeed:     2.4,
-  rippleDecay:     0.018,
-  rippleRadius:    110,
-  centerPeakHeight:    0,
-  centerPeakSharpness: 0.035,
-  sphereRadius:    1.5,
-  sphereColor:     '#a8cce0',
-  // Fine grain (tiny freckle-like ripples overlay)
-  grainScale:      16,
-  grainStrength:   0.3,
-  // Dimples (very fine tight bump structure)
-  dimpleScale:     40,
-  dimpleStrength:  0.5,
-  // Crest highlights (small whitecaps covering the surface)
-  crestStrength:   0.35,
-  crestThreshold:  0.35,
-  crestSharpness:  0.25,
-  crestColor:      '#d8e5ec',
-  alpha:           1,
-  // Layered water color
-  shallowColor:    '#5c7a8a',
-  deepColor:       '#2a4050',
-  transColor:      '#8aa8b8',
-  colorDepth:      5,
-  waterAmbient:    0.75,
-  // Reflection
-  reflStrength:   0.92,
-  reflBase:       0,
-  reflAmbient:    0,
-  fresnelPower:   8.6,
-  scatterMix:     0.35,
-  // Dyson position — rings rotate in place around the centered core.
-  dysonX:         0,
-  dysonZ:         35,
-  dysonHeight:    4.5,
-  dysonScale:     1.55,
-  dysonRingSpeed: 1.0,
-  dysonCoreX:     0,
-  dysonCoreY:     0,
-  dysonCoreZ:     0,
-  dysonCoreSize:  1.05,
-  dysonRing1X:    0,
-  dysonRing1Y:    0,
-  dysonRing1Z:    0,
+  capillaryDrift: 0.105,
+  rippleX: 0,
+  rippleZ: 35,
+  rippleStrength: 1.55,
+  rippleWaveScale: 1.45,
+  rippleGap: 6.5,
+  rippleSpeed: 3.4,
+  rippleDecay: 0.035,
+  rippleRadius: 110,
+  centerPeakHeight: 10,
+  centerPeakSharpness: 0.19,
+  sphereRadius: 1.5,
+  sphereColor: '#a8cce0',
+  grainScale: 16,
+  grainStrength: 0.3,
+  dimpleScale: 40,
+  dimpleStrength: 0.5,
+  crestStrength: 0.35,
+  crestThreshold: 0.35,
+  crestSharpness: 0.25,
+  crestColor: '#d8e5ec',
+  alpha: 1,
+  shallowColor: '#5c7a8a',
+  deepColor: '#2a4050',
+  transColor: '#8aa8b8',
+  colorDepth: 5,
+  waterAmbient: 0.75,
+  reflStrength: 0.92,
+  reflBase: 0,
+  reflAmbient: 0,
+  fresnelPower: 8.6,
+  scatterMix: 0.05,
+  environmentX: 1,
+  environmentY: -0.2,
+  environmentZ: 51,
+  environmentRotX: 0,
+  environmentRotY: 0,
+  environmentRotZ: 0,
+  environmentScale: 3.5,
+  dysonX: 0,
+  dysonZ: 35,
+  dysonHeight: 6.1,
+  dysonScale: 1.55,
+  dysonRingSpeed: 1,
+  dysonBobHeight: 0.18,
+  dysonBobSpeed: 0.55,
+  dysonCoreX: 0,
+  dysonCoreY: 0,
+  dysonCoreZ: 0,
+  dysonCoreSize: 1.05,
+  dysonRing1X: 0,
+  dysonRing1Y: 0,
+  dysonRing1Z: 0,
   dysonRing1Size: 1,
   dysonRing1Speed: 1.35,
   dysonRing1AxisX: 1,
@@ -105,9 +110,9 @@ const DEFAULTS = {
   dysonRing1RotX: 0,
   dysonRing1RotY: 0,
   dysonRing1RotZ: 0,
-  dysonRing2X:    0,
-  dysonRing2Y:    0,
-  dysonRing2Z:    0,
+  dysonRing2X: 0,
+  dysonRing2Y: 0,
+  dysonRing2Z: 0,
   dysonRing2Size: 1,
   dysonRing2Speed: -1.35,
   dysonRing2AxisX: 1,
@@ -118,9 +123,9 @@ const DEFAULTS = {
   dysonRing2RotX: 0,
   dysonRing2RotY: 0,
   dysonRing2RotZ: 0,
-  dysonRing3X:    0,
-  dysonRing3Y:    0,
-  dysonRing3Z:    0,
+  dysonRing3X: 0,
+  dysonRing3Y: 0,
+  dysonRing3Z: 0,
   dysonRing3Size: 1,
   dysonRing3Speed: 1.08,
   dysonRing3AxisX: 1,
@@ -131,9 +136,9 @@ const DEFAULTS = {
   dysonRing3RotX: 0,
   dysonRing3RotY: 0,
   dysonRing3RotZ: 0,
-  dysonRing4X:    0,
-  dysonRing4Y:    0,
-  dysonRing4Z:    0,
+  dysonRing4X: 0,
+  dysonRing4Y: 0,
+  dysonRing4Z: 0,
   dysonRing4Size: 1,
   dysonRing4Speed: -1.08,
   dysonRing4AxisX: 1,
@@ -144,24 +149,23 @@ const DEFAULTS = {
   dysonRing4RotX: 0,
   dysonRing4RotY: 0,
   dysonRing4RotZ: 0,
-  // Sun
-  sunAzimuth:    243,
-  sunElevation:   4,
-  sunColor:     '#ffffff',
-  sunDiskSize:    100,
-  sunIntensity:   1.4,
-  specStrength:   0.1,
-  specShininess:  70,
-  // Camera
-  cameraHeight:   6.5,
-  fov:            45,
-  // Renderer
-  exposure:       0.95,
-  // Post FX
-  bloomStrength:  0.6,
-  bloomRadius:    0.5,
+  sunAzimuth: 270,
+  sunElevation: 90,
+  sunColor: '#ffffff',
+  sunDiskSize: 100,
+  sunIntensity: 0.9,
+  specStrength: 0.1,
+  specShininess: 70,
+  cameraHeight: 5.5,
+  cameraYaw: 0,
+  cameraPitch: 3,
+  cameraLookAmount: 1.5,
+  fov: 47,
+  exposure: 0.95,
+  bloomStrength: 0.6,
+  bloomRadius: 0.5,
   bloomThreshold: 0.85,
-  caStrength:     0.0015,
+  caStrength: 0.0015,
 }
 
 const DYSON_RING_MOTION = [
@@ -212,6 +216,13 @@ const PATCHED_WATER_VS = /* glsl */`
   uniform float uWaveHeight;
   uniform float uWaveScaleVS;
   uniform sampler2D normalSampler;
+  uniform vec3  uRippleOrigin;
+  uniform float uRippleStrength;
+  uniform float uRippleWaveScale;
+  uniform float uRippleGap;
+  uniform float uRippleSpeed;
+  uniform float uRippleDecay;
+  uniform float uRippleRadius;
 
   varying vec4 mirrorCoord;
   varying vec4 worldPosition;
@@ -235,11 +246,25 @@ const PATCHED_WATER_VS = /* glsl */`
     return h * 0.25 - 0.5; // centre around 0, range roughly [-0.5, 0.5]
   }
 
+  float rippleHeight( vec2 xz ) {
+    vec2 rdv = xz - uRippleOrigin.xz;
+    float rdist = length( rdv );
+    float radius = max( uRippleRadius, 0.1 );
+    float edgeFade = smoothstep( 1.0, 0.0, rdist / radius );
+    float rDamp = exp( -rdist * uRippleDecay ) * edgeFade;
+    float gap = max( uRippleGap, 0.1 );
+    float phase = rdist * 6.28318530718 / gap - time * uRippleSpeed;
+    float rough = waveHeight( xz * 0.09 + vec2( time * 0.04, -time * 0.03 ) );
+    float uneven = 0.82 + rough * 0.18;
+    return sin( phase ) * rDamp * uRippleStrength * uRippleWaveScale * uneven * 0.12;
+  }
+
   void main() {
     // World position before displacement (for sampling).
     vec4 worldPos = modelMatrix * vec4( position, 1.0 );
     float h = waveHeight( worldPos.xz * uWaveScaleVS );
     worldPos.y += h * uWaveHeight;
+    worldPos.y += rippleHeight( worldPos.xz );
     vWaveHeight = h; // raw noise height in roughly [-0.5, 0.5]
 
     worldPosition = worldPos;
@@ -266,6 +291,8 @@ const PATCHED_WATER_FS = /* glsl */`
   uniform float size;
   uniform float distortionScale;
   uniform sampler2D normalSampler;
+  uniform float uWaterCutoffZ;
+  uniform float uWaterCutoffSoftness;
   uniform vec3 sunColor;
   uniform vec3 sunDirection;
   uniform vec3 eye;
@@ -287,7 +314,8 @@ const PATCHED_WATER_FS = /* glsl */`
   uniform float uReflBlur;
   uniform vec3  uRippleOrigin;
   uniform float uRippleStrength;
-  uniform float uRippleFreq;
+  uniform float uRippleWaveScale;
+  uniform float uRippleGap;
   uniform float uRippleSpeed;
   uniform float uRippleDecay;
   uniform float uRippleRadius;
@@ -390,16 +418,19 @@ const PATCHED_WATER_FS = /* glsl */`
     vec2 rDir = wrDist > 0.001 ? warpedRdv / wrDist : vec2( 0.0 );
     float edgeFade = smoothstep( 1.0, 0.0, rr );
     float rDamp = exp( -wrDist * uRippleDecay ) * edgeFade;
-    float rPhase = wrDist * uRippleFreq - time * uRippleSpeed + warpA.y * 0.85 + warpB.y * 0.35;
+    float gap = max( uRippleGap, 0.1 );
+    float waveNumber = 6.28318530718 / gap;
+    float waveScale = max( uRippleWaveScale, 0.05 );
+    float rPhase = wrDist * waveNumber - time * uRippleSpeed + warpA.y * 0.85 + warpB.y * 0.35;
     float unevenAmp = 0.68 + 0.32 * clamp( warpA.w + 0.5, 0.0, 1.0 );
     float ringSlope = (
       cos( rPhase ) +
       cos( rPhase * 1.37 + warpB.z * 1.4 ) * 0.22
-    ) * uRippleFreq * uRippleStrength * rDamp * unevenAmp * 1.65;
+    ) * waveNumber * uRippleStrength * rDamp * unevenAmp * 1.65 * waveScale;
     surfaceNormal = normalize( surfaceNormal + vec3( rDir.x * ringSlope, 0.0, rDir.y * ringSlope ) );
 
-    vec4 rippleChop = getNoise( worldPosition.xz * size * ( uRippleFreq * 4.0 + 2.0 ) + vec2( time * uRippleSpeed * 0.55, -time * uRippleSpeed * 0.37 ) );
-    float chopMask = edgeFade * uRippleStrength * 0.07;
+    vec4 rippleChop = getNoise( worldPosition.xz * size * ( 28.0 / gap + 2.0 ) + vec2( time * uRippleSpeed * 0.55, -time * uRippleSpeed * 0.37 ) );
+    float chopMask = edgeFade * uRippleStrength * waveScale * 0.07;
     surfaceNormal = normalize( surfaceNormal + rippleChop.xzy * vec3( chopMask, 0.0, chopMask ) );
 
     vec3 diffuseLight = vec3(0.0);
@@ -461,8 +492,12 @@ const PATCHED_WATER_FS = /* glsl */`
     vec3 albedo = mix( bodyOut, reflOut, reflMix ) + specularLight * specScale;
     // Crest highlights — tint toward crest colour where the surface is steep.
     albedo = mix( albedo, uCrestColor, crestMask * uCrestStrength );
+    float cutoffSoftness = max( uWaterCutoffSoftness, 0.001 );
+    float cutoffAlpha = smoothstep( uWaterCutoffZ, uWaterCutoffZ + cutoffSoftness, worldPosition.z );
+    if ( cutoffAlpha <= 0.001 ) discard;
+
     vec3 outgoingLight = albedo;
-    gl_FragColor = vec4( outgoingLight, alpha );
+    gl_FragColor = vec4( outgoingLight, alpha * cutoffAlpha );
 
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -510,6 +545,27 @@ function applyDysonIceMaterial(object, envMap, core = false) {
     child.renderOrder = core ? 2 : 1
     if (Array.isArray(oldMaterial)) oldMaterial.forEach((m) => m.dispose())
     else oldMaterial?.dispose()
+  })
+}
+
+function applyCameraAngle(camera, params, lookYaw = 0, lookPitch = 0, lookRoll = 0) {
+  const yaw = THREE.MathUtils.degToRad(params.cameraYaw + lookYaw)
+  const pitch = THREE.MathUtils.degToRad(params.cameraPitch + lookPitch)
+  const target = new THREE.Vector3(
+    Math.sin(yaw) * Math.cos(pitch),
+    Math.sin(pitch),
+    -Math.cos(yaw) * Math.cos(pitch),
+  ).add(camera.position)
+  camera.lookAt(target)
+  camera.rotateZ(THREE.MathUtils.degToRad(lookRoll))
+}
+
+function disposeObject3D(object) {
+  object.traverse((child) => {
+    if (!child.isMesh) return
+    child.geometry?.dispose()
+    if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose())
+    else child.material?.dispose()
   })
 }
 
@@ -590,7 +646,7 @@ function DysonPartControls({ title, prefix, params, set, rotation = false }) {
 export default function WaterDone1Page() {
   const containerRef = useRef(null)
   const fpsRef = useRef(null)
-  const STORAGE_KEY = 'waterdone1-config'
+  const STORAGE_KEY = 'waterdone1-config-latest'
   const [panelVisible, setPanelVisible] = useState(true)
   const [params, setParams] = useState(() => {
     try {
@@ -622,6 +678,7 @@ export default function WaterDone1Page() {
   const refs = useRef({
     renderer: null,
     camera: null,
+    cameraLook: { x: 0, y: 0, roll: 0, targetX: 0, targetY: 0, targetRoll: 0 },
     water: null,
     sunDisk: null,
     dirLight: null,
@@ -645,7 +702,9 @@ export default function WaterDone1Page() {
     const aspect = container.clientWidth / container.clientHeight
     const camera = new THREE.PerspectiveCamera(DEFAULTS.fov, aspect, 1, 20000)
     camera.position.set(0, DEFAULTS.cameraHeight, 60)
-    camera.lookAt(0, 2, 0)
+    camera.userData.params = DEFAULTS
+    camera.userData.lookAmount = DEFAULTS.cameraLookAmount
+    applyCameraAngle(camera, DEFAULTS)
 
     // Sky cubemap — used as background AND auto-reflected by the Water's
     // internal Reflector pass.
@@ -724,13 +783,16 @@ export default function WaterDone1Page() {
     water.material.uniforms.uEnvMap         = { value: skyMap }
     water.material.uniforms.uWaveHeight     = { value: DEFAULTS.waveHeight }
     water.material.uniforms.uWaveScaleVS    = { value: DEFAULTS.waveScaleVS }
+    water.material.uniforms.uWaterCutoffZ   = { value: DEFAULTS.waterCutoffZ }
+    water.material.uniforms.uWaterCutoffSoftness = { value: DEFAULTS.waterCutoffSoftness }
     water.material.uniforms.uReflBlur       = { value: DEFAULTS.reflBlur }
     water.material.uniforms.uCapillaryScale    = { value: DEFAULTS.capillaryScale }
     water.material.uniforms.uCapillaryStrength = { value: DEFAULTS.capillaryStrength }
     water.material.uniforms.uCapillaryDrift    = { value: DEFAULTS.capillaryDrift }
     water.material.uniforms.uRippleOrigin   = { value: new THREE.Vector3(DEFAULTS.rippleX, 0, DEFAULTS.rippleZ) }
     water.material.uniforms.uRippleStrength = { value: DEFAULTS.rippleStrength }
-    water.material.uniforms.uRippleFreq     = { value: DEFAULTS.rippleFreq }
+    water.material.uniforms.uRippleWaveScale = { value: DEFAULTS.rippleWaveScale }
+    water.material.uniforms.uRippleGap      = { value: DEFAULTS.rippleGap }
     water.material.uniforms.uRippleSpeed    = { value: DEFAULTS.rippleSpeed }
     water.material.uniforms.uRippleDecay    = { value: DEFAULTS.rippleDecay }
     water.material.uniforms.uRippleRadius   = { value: DEFAULTS.rippleRadius }
@@ -750,14 +812,41 @@ export default function WaterDone1Page() {
 
     scene.add(water)
 
+    const gltfLoader = new GLTFLoader()
+
+    // Environment — authored ice blocks, rocks, and background scene.
+    const environmentGroup = new THREE.Group()
+    environmentGroup.position.set(DEFAULTS.environmentX, DEFAULTS.environmentY, DEFAULTS.environmentZ)
+    environmentGroup.rotation.set(
+      THREE.MathUtils.degToRad(DEFAULTS.environmentRotX),
+      THREE.MathUtils.degToRad(DEFAULTS.environmentRotY),
+      THREE.MathUtils.degToRad(DEFAULTS.environmentRotZ),
+    )
+    environmentGroup.scale.setScalar(DEFAULTS.environmentScale)
+    scene.add(environmentGroup)
+
+    gltfLoader.load('/assets/Objects/Environment.glb', (gltf) => {
+      const environment = gltf.scene
+      environment.traverse((child) => {
+        if (!child.isMesh) return
+        child.castShadow = false
+        child.receiveShadow = false
+      })
+      environmentGroup.add(environment)
+    })
+
     // Dyson — central ice orb wrapped by 4 independently animated ring pivots.
     const dysonGroup = new THREE.Group()
     dysonGroup.position.set(DEFAULTS.dysonX, DEFAULTS.dysonHeight, DEFAULTS.dysonZ)
     dysonGroup.scale.setScalar(DEFAULTS.dysonScale)
     dysonGroup.userData.ringSpeed = DEFAULTS.dysonRingSpeed
+    dysonGroup.userData.baseX = DEFAULTS.dysonX
+    dysonGroup.userData.baseY = DEFAULTS.dysonHeight
+    dysonGroup.userData.baseZ = DEFAULTS.dysonZ
+    dysonGroup.userData.bobHeight = DEFAULTS.dysonBobHeight
+    dysonGroup.userData.bobSpeed = DEFAULTS.dysonBobSpeed
     scene.add(dysonGroup)
 
-    const gltfLoader = new GLTFLoader()
     const dysonRings = []
     const dysonCore = new THREE.Group()
     dysonCore.position.set(DEFAULTS.dysonCoreX, DEFAULTS.dysonCoreY, DEFAULTS.dysonCoreZ)
@@ -800,6 +889,7 @@ export default function WaterDone1Page() {
     refs.current.sunDisk = sunDisk
     refs.current.dirLight = dirLight
     refs.current.scene = scene
+    refs.current.environmentGroup = environmentGroup
     refs.current.dysonGroup = dysonGroup
     refs.current.dysonRings = dysonRings
     refs.current.dysonClock = 0
@@ -840,6 +930,15 @@ export default function WaterDone1Page() {
       const dt = refs.current.dysonClock
       const dg = refs.current.dysonGroup
       const ringSpeed = dg?.userData.ringSpeed ?? DEFAULTS.dysonRingSpeed
+      if (dg) {
+        const bobHeight = dg.userData.bobHeight ?? DEFAULTS.dysonBobHeight
+        const bobSpeed = dg.userData.bobSpeed ?? DEFAULTS.dysonBobSpeed
+        dg.position.set(
+          dg.userData.baseX ?? DEFAULTS.dysonX,
+          (dg.userData.baseY ?? DEFAULTS.dysonHeight) + Math.sin(dt * bobSpeed * Math.PI * 2) * bobHeight,
+          dg.userData.baseZ ?? DEFAULTS.dysonZ,
+        )
+      }
       refs.current.dysonRings?.forEach((ring) => {
         const ud = ring.userData
         const gyroTilt = THREE.MathUtils.degToRad(ud.gyroTilt ?? 0)
@@ -857,6 +956,14 @@ export default function WaterDone1Page() {
         )
         ring.quaternion.copy(ud.baseQuaternion).multiply(ud.baseRotation).multiply(gyroFrame).multiply(wobble).multiply(spin)
       })
+
+      const look = refs.current.cameraLook
+      if (look) {
+        look.x += (look.targetX - look.x) * Math.min(delta * 5, 1)
+        look.y += (look.targetY - look.y) * Math.min(delta * 5, 1)
+        look.roll += (look.targetRoll - look.roll) * Math.min(delta * 5, 1)
+        applyCameraAngle(camera, camera.userData.params ?? DEFAULTS, look.x, look.y, look.roll)
+      }
 
       composer.render()
       fpsFrames++
@@ -883,22 +990,36 @@ export default function WaterDone1Page() {
     const ro = new ResizeObserver(resize)
     ro.observe(container)
 
+    const updatePointerLook = (event) => {
+      const rect = container.getBoundingClientRect()
+      const nx = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 2 - 1
+      const ny = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 2 - 1
+      const amount = camera.userData.lookAmount ?? DEFAULTS.cameraLookAmount
+      refs.current.cameraLook.targetX = THREE.MathUtils.clamp(-nx, -1, 1) * amount
+      refs.current.cameraLook.targetY = THREE.MathUtils.clamp(ny, -1, 1) * amount
+      refs.current.cameraLook.targetRoll = THREE.MathUtils.clamp(nx * 0.55 + ny * 0.25, -1, 1) * amount
+    }
+    const resetPointerLook = () => {
+      refs.current.cameraLook.targetX = 0
+      refs.current.cameraLook.targetY = 0
+      refs.current.cameraLook.targetRoll = 0
+    }
+    container.addEventListener('pointermove', updatePointerLook)
+    container.addEventListener('pointerleave', resetPointerLook)
+
     return () => {
       cancelAnimationFrame(raf)
       ro.disconnect()
+      container.removeEventListener('pointermove', updatePointerLook)
+      container.removeEventListener('pointerleave', resetPointerLook)
       water.material.dispose()
       water.geometry.dispose()
       waterNormals.dispose()
       skyMap.dispose()
       sunDisk.geometry.dispose()
       sunDisk.material.dispose()
-      dysonGroup.traverse((o) => {
-        if (o.isMesh) {
-          o.geometry?.dispose()
-          if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose())
-          else o.material?.dispose()
-        }
-      })
+      disposeObject3D(environmentGroup)
+      disposeObject3D(dysonGroup)
       renderer.dispose()
       if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement)
     }
@@ -924,6 +1045,8 @@ export default function WaterDone1Page() {
     r.water.material.uniforms.uColorDepth.value = params.colorDepth
     r.water.material.uniforms.uWaveHeight.value = params.waveHeight
     r.water.material.uniforms.uWaveScaleVS.value = params.waveScaleVS
+    r.water.material.uniforms.uWaterCutoffZ.value = params.waterCutoffZ
+    r.water.material.uniforms.uWaterCutoffSoftness.value = params.waterCutoffSoftness
     r.water.material.uniforms.uReflBlur.value = params.reflBlur
     r.water.material.uniforms.uCapillaryScale.value = params.capillaryScale
     r.water.material.uniforms.uCapillaryStrength.value = params.capillaryStrength
@@ -931,12 +1054,29 @@ export default function WaterDone1Page() {
     r.water.material.uniforms.uRippleOrigin.value.set(params.rippleX, 0, params.rippleZ)
     r.water.material.uniforms.uRippleStrength.value = params.rippleStrength
     r.water.material.uniforms.uRippleRadius.value = params.rippleRadius
-    r.water.material.uniforms.uRippleFreq.value = params.rippleFreq
+    r.water.material.uniforms.uRippleWaveScale.value = params.rippleWaveScale
+    r.water.material.uniforms.uRippleGap.value = params.rippleGap
     r.water.material.uniforms.uRippleDecay.value = params.rippleDecay
     r.water.material.uniforms.uRippleSpeed.value = params.rippleSpeed
 
+    // Environment base transform.
+    if (r.environmentGroup) {
+      r.environmentGroup.position.set(params.environmentX, params.environmentY, params.environmentZ)
+      r.environmentGroup.rotation.set(
+        THREE.MathUtils.degToRad(params.environmentRotX),
+        THREE.MathUtils.degToRad(params.environmentRotY),
+        THREE.MathUtils.degToRad(params.environmentRotZ),
+      )
+      r.environmentGroup.scale.setScalar(params.environmentScale)
+    }
+
     // Dyson base transform. Position is fixed; only ring quaternions animate.
     if (r.dysonGroup) {
+      r.dysonGroup.userData.baseX = params.dysonX
+      r.dysonGroup.userData.baseY = params.dysonHeight
+      r.dysonGroup.userData.baseZ = params.dysonZ
+      r.dysonGroup.userData.bobHeight = params.dysonBobHeight
+      r.dysonGroup.userData.bobSpeed = params.dysonBobSpeed
       r.dysonGroup.position.set(params.dysonX, params.dysonHeight, params.dysonZ)
       r.dysonGroup.rotation.set(0, 0, 0)
       r.dysonGroup.scale.setScalar(params.dysonScale)
@@ -999,6 +1139,9 @@ export default function WaterDone1Page() {
 
     // Camera + renderer.
     r.camera.position.y = params.cameraHeight
+    r.camera.userData.params = params
+    r.camera.userData.lookAmount = params.cameraLookAmount
+    applyCameraAngle(r.camera, params, r.cameraLook?.x ?? 0, r.cameraLook?.y ?? 0, r.cameraLook?.roll ?? 0)
     r.camera.fov = params.fov
     r.camera.updateProjectionMatrix()
     r.renderer.toneMappingExposure = params.exposure
@@ -1033,6 +1176,8 @@ export default function WaterDone1Page() {
           <Slider label="Wave speed"  value={params.waveSpeed}       min={0}    max={3}    step={0.05} onChange={set('waveSpeed')}       fmt={(v) => v.toFixed(2)} />
           <Slider label="Wave height" value={params.waveHeight}      min={0}    max={5}    step={0.05} onChange={set('waveHeight')}      fmt={(v) => v.toFixed(2)} />
           <Slider label="Wave scale"  value={params.waveScaleVS}     min={0.005} max={0.2} step={0.005} onChange={set('waveScaleVS')}    fmt={(v) => v.toFixed(3)} />
+          <Slider label="Cutoff Z"    value={params.waterCutoffZ}    min={-1000} max={1000} step={5}   onChange={set('waterCutoffZ')}    fmt={(v) => v.toFixed(0)} />
+          <Slider label="Cutoff soft" value={params.waterCutoffSoftness} min={0.001} max={300} step={1} onChange={set('waterCutoffSoftness')} fmt={(v) => v.toFixed(0)} />
           <Slider label="Alpha"       value={params.alpha}           min={0}    max={1}    step={0.01} onChange={set('alpha')}           fmt={(v) => v.toFixed(2)} />
           <Slider label="Body mix"    value={params.scatterMix}      min={0}    max={2}    step={0.05} onChange={set('scatterMix')}      fmt={(v) => v.toFixed(2)} />
         </details>
@@ -1072,8 +1217,22 @@ export default function WaterDone1Page() {
         <details className="group" open>
           <summary>Camera & Render</summary>
           <Slider label="Cam height"  value={params.cameraHeight}    min={1}    max={30}   step={0.5}  onChange={set('cameraHeight')}    fmt={(v) => v.toFixed(1)} />
+          <Slider label="Yaw"         value={params.cameraYaw}       min={-180} max={180}  step={1}    onChange={set('cameraYaw')}       fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Pitch"       value={params.cameraPitch}     min={-45}  max={45}   step={1}    onChange={set('cameraPitch')}     fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Look amt"    value={params.cameraLookAmount} min={0}   max={1.5}  step={0.05} onChange={set('cameraLookAmount')} fmt={(v) => `${v.toFixed(2)}°`} />
           <Slider label="FOV"         value={params.fov}             min={25}   max={90}   step={1}    onChange={set('fov')}             fmt={(v) => `${v.toFixed(0)}°`} />
           <Slider label="Exposure"    value={params.exposure}        min={0.3}  max={2}    step={0.05} onChange={set('exposure')}        fmt={(v) => v.toFixed(2)} />
+        </details>
+
+        <details className="group" open>
+          <summary>Environment</summary>
+          <Slider label="X"       value={params.environmentX}     min={-500} max={500} step={1}    onChange={set('environmentX')}     fmt={(v) => v.toFixed(0)} />
+          <Slider label="Y"       value={params.environmentY}     min={-200} max={200} step={1}    onChange={set('environmentY')}     fmt={(v) => v.toFixed(0)} />
+          <Slider label="Z"       value={params.environmentZ}     min={-500} max={500} step={1}    onChange={set('environmentZ')}     fmt={(v) => v.toFixed(0)} />
+          <Slider label="Rot X"   value={params.environmentRotX}  min={-180} max={180} step={1}    onChange={set('environmentRotX')}  fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Rot Y"   value={params.environmentRotY}  min={-180} max={180} step={1}    onChange={set('environmentRotY')}  fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Rot Z"   value={params.environmentRotZ}  min={-180} max={180} step={1}    onChange={set('environmentRotZ')}  fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Scale"   value={params.environmentScale} min={0.001} max={2}  step={0.001} onChange={set('environmentScale')} fmt={(v) => v.toFixed(3)} />
         </details>
 
         <details className="group" open>
@@ -1083,6 +1242,8 @@ export default function WaterDone1Page() {
           <Slider label="Height"      value={params.dysonHeight}     min={0}    max={30}   step={0.1}  onChange={set('dysonHeight')}     fmt={(v) => v.toFixed(1)} />
           <Slider label="Scale"       value={params.dysonScale}      min={0.2}  max={10}   step={0.05} onChange={set('dysonScale')}      fmt={(v) => v.toFixed(2)} />
           <Slider label="Ring speed"  value={params.dysonRingSpeed}  min={-3}   max={3}    step={0.05} onChange={set('dysonRingSpeed')}  fmt={(v) => v.toFixed(2)} />
+          <Slider label="Bob height"  value={params.dysonBobHeight}  min={0}    max={2}    step={0.01} onChange={set('dysonBobHeight')}  fmt={(v) => v.toFixed(2)} />
+          <Slider label="Bob speed"   value={params.dysonBobSpeed}   min={0}    max={2}    step={0.01} onChange={set('dysonBobSpeed')}   fmt={(v) => v.toFixed(2)} />
         </details>
         <DysonPartControls title="Core" prefix="dysonCore" params={params} set={set} />
         <DysonPartControls title="Ring 1" prefix="dysonRing1" params={params} set={set} rotation />
@@ -1095,7 +1256,8 @@ export default function WaterDone1Page() {
           <Slider label="X"           value={params.rippleX}         min={-100} max={100}  step={0.5}  onChange={set('rippleX')}         fmt={(v) => v.toFixed(1)} />
           <Slider label="Z"           value={params.rippleZ}         min={-100} max={100}  step={0.5}  onChange={set('rippleZ')}         fmt={(v) => v.toFixed(1)} />
           <Slider label="Strength"    value={params.rippleStrength}  min={0}    max={5}    step={0.05} onChange={set('rippleStrength')}  fmt={(v) => v.toFixed(2)} />
-          <Slider label="Freq"        value={params.rippleFreq}      min={0.05} max={3}    step={0.01} onChange={set('rippleFreq')}      fmt={(v) => v.toFixed(2)} />
+          <Slider label="Scale"       value={params.rippleWaveScale} min={0.1}  max={5}    step={0.05} onChange={set('rippleWaveScale')} fmt={(v) => v.toFixed(2)} />
+          <Slider label="Gap"         value={params.rippleGap}       min={2}    max={60}   step={0.5}  onChange={set('rippleGap')}       fmt={(v) => v.toFixed(1)} />
           <Slider label="Speed"       value={params.rippleSpeed}     min={0}    max={10}   step={0.1}  onChange={set('rippleSpeed')}     fmt={(v) => v.toFixed(1)} />
           <Slider label="Decay"       value={params.rippleDecay}     min={0.005} max={0.5} step={0.005} onChange={set('rippleDecay')}    fmt={(v) => v.toFixed(3)} />
           <Slider label="Radius"      value={params.rippleRadius}    min={5}    max={300}  step={1}    onChange={set('rippleRadius')}    fmt={(v) => v.toFixed(0)} />
