@@ -140,7 +140,7 @@ const DEFAULTS = {
   dysonRing3RotY: 0,
   dysonRing3RotZ: 0,
   dysonRing3OpenAmount: 0.28,
-  dysonRing3OpenTime: 3.1,
+  dysonRing3OpenTime: 4.65,
   dysonRing3OpenEasing: 2.4,
   dysonRing4X: 0,
   dysonRing4Y: 0,
@@ -157,7 +157,7 @@ const DEFAULTS = {
   dysonRing4RotY: 0,
   dysonRing4RotZ: 0,
   dysonRing4OpenAmount: 0.36,
-  dysonRing4OpenTime: 3.1,
+  dysonRing4OpenTime: 4.65,
   dysonRing4OpenEasing: 2.4,
   sunAzimuth: 270,
   sunElevation: 24,
@@ -1092,8 +1092,8 @@ export default function WaterDone1Page() {
         if (ud.openSegments?.length) {
           const cycle = (dt / Math.max(ud.openTime ?? 1, 0.01) + ud.phase / (Math.PI * 2)) % 1
           const easing = Math.max(ud.openEasing ?? 2.4, 0.01)
-          const holdClosed = 0.46
-          const openEnd = 0.95
+          const holdClosed = 0.42
+          const openEnd = 0.97
           const openCycle = cycle < holdClosed
             ? 0
             : cycle < openEnd
