@@ -139,6 +139,9 @@ const DEFAULTS = {
   dysonRing3RotX: 0,
   dysonRing3RotY: 0,
   dysonRing3RotZ: 0,
+  dysonRing3OpenAmount: 0.28,
+  dysonRing3OpenTime: 3.1,
+  dysonRing3OpenEasing: 2.4,
   dysonRing4X: 0,
   dysonRing4Y: 0,
   dysonRing4Z: 0,
@@ -153,7 +156,7 @@ const DEFAULTS = {
   dysonRing4RotX: 0,
   dysonRing4RotY: 0,
   dysonRing4RotZ: 0,
-  dysonRing4OpenAmount: 1.8,
+  dysonRing4OpenAmount: 0.36,
   dysonRing4OpenTime: 3.1,
   dysonRing4OpenEasing: 2.4,
   sunAzimuth: 270,
@@ -529,7 +532,7 @@ function centerObjectOnLocalOrigin(object) {
   object.position.sub(center)
 }
 
-function setupRingOpenSegments(ring, pivot) {
+function setupRingOpenSegments(ring, pivot, mode = 'fourWay') {
   ring.updateMatrixWorld(true)
   const meshes = []
   ring.traverse((child) => {
@@ -545,10 +548,21 @@ function setupRingOpenSegments(ring, pivot) {
 
   const xs = segmentData.map((segment) => segment.centerInRing.x)
   const ys = segmentData.map((segment) => segment.centerInRing.y)
+  const zs = segmentData.map((segment) => segment.centerInRing.z)
   const minX = Math.min(...xs)
   const maxX = Math.max(...xs)
   const minY = Math.min(...ys)
   const maxY = Math.max(...ys)
+  const minZ = Math.min(...zs)
+  const maxZ = Math.max(...zs)
+  const twoWayAxis = (() => {
+    const ranges = [
+      { axis: 'x', range: maxX - minX, mid: (minX + maxX) * 0.5 },
+      { axis: 'y', range: maxY - minY, mid: (minY + maxY) * 0.5 },
+      { axis: 'z', range: maxZ - minZ, mid: (minZ + maxZ) * 0.5 },
+    ]
+    return ranges.sort((a, b) => b.range - a.range)[0]
+  })()
 
   const segments = segmentData.map(({ mesh, centerInRing, centerInParent }) => {
     const wrapper = new THREE.Group()
@@ -562,7 +576,14 @@ function setupRingOpenSegments(ring, pivot) {
     const top = Math.abs(centerInRing.y - maxY)
     const closestEdge = Math.min(left, right, bottom, top)
     const direction = new THREE.Vector3()
-    if (closestEdge === top) direction.set(0, 1, 0)
+    if (mode === 'horizontal') {
+      const sign = centerInRing[twoWayAxis.axis] >= twoWayAxis.mid ? 1 : -1
+      direction.set(
+        twoWayAxis.axis === 'x' ? sign : 0,
+        twoWayAxis.axis === 'y' ? sign : 0,
+        twoWayAxis.axis === 'z' ? sign : 0,
+      )
+    } else if (closestEdge === top) direction.set(0, 1, 0)
     else if (closestEdge === bottom) direction.set(0, -1, 0)
     else if (closestEdge === right) direction.set(1, 0, 0)
     else direction.set(-1, 0, 0)
@@ -705,6 +726,13 @@ function DysonPartControls({ title, prefix, params, set, rotation = false }) {
           <Slider label="Gyro speed" value={params[`${prefix}GyroSpeed`]} min={-3} max={3} step={0.01} onChange={set(`${prefix}GyroSpeed`)} fmt={(v) => v.toFixed(2)} />
           <Slider label="Gyro tilt" value={params[`${prefix}GyroTilt`]} min={0} max={90} step={1} onChange={set(`${prefix}GyroTilt`)} fmt={(v) => `${v.toFixed(0)}°`} />
           <Slider label="Speed +/-" value={params[`${prefix}Speed`]} min={-5} max={5} step={0.01} onChange={set(`${prefix}Speed`)} fmt={(v) => v.toFixed(2)} />
+          {prefix === 'dysonRing3' && (
+            <>
+              <Slider label="Open strength" value={params.dysonRing3OpenAmount} min={0} max={5} step={0.05} onChange={set('dysonRing3OpenAmount')} fmt={(v) => v.toFixed(2)} />
+              <Slider label="Open time" value={params.dysonRing3OpenTime} min={0.2} max={8} step={0.05} onChange={set('dysonRing3OpenTime')} fmt={(v) => `${v.toFixed(2)}s`} />
+              <Slider label="Easing" value={params.dysonRing3OpenEasing} min={0.2} max={6} step={0.05} onChange={set('dysonRing3OpenEasing')} fmt={(v) => v.toFixed(2)} />
+            </>
+          )}
           {prefix === 'dysonRing4' && (
             <>
               <Slider label="Open strength" value={params.dysonRing4OpenAmount} min={0} max={5} step={0.05} onChange={set('dysonRing4OpenAmount')} fmt={(v) => v.toFixed(2)} />
@@ -966,6 +994,11 @@ export default function WaterDone1Page() {
         openTime: motion.key === 'dysonRing4' ? DEFAULTS.dysonRing4OpenTime : 1,
         openEasing: motion.key === 'dysonRing4' ? DEFAULTS.dysonRing4OpenEasing : 2.4,
       }
+      if (motion.key === 'dysonRing3') {
+        pivot.userData.openAmount = DEFAULTS.dysonRing3OpenAmount
+        pivot.userData.openTime = DEFAULTS.dysonRing3OpenTime
+        pivot.userData.openEasing = DEFAULTS.dysonRing3OpenEasing
+      }
       dysonRings.push(pivot)
       dysonGroup.add(pivot)
 
@@ -973,7 +1006,10 @@ export default function WaterDone1Page() {
         const ring = gltf.scene
         applyDysonIceMaterial(ring, skyMap, false)
         centerObjectOnLocalOrigin(ring)
-        if (motion.key === 'dysonRing4') setupRingOpenSegments(ring, pivot)
+        if (motion.key === 'dysonRing3') setupRingOpenSegments(ring, pivot, 'horizontal')
+        if (motion.key === 'dysonRing4') {
+          setupRingOpenSegments(ring, pivot)
+        }
         pivot.add(ring)
       })
     })
@@ -1056,9 +1092,13 @@ export default function WaterDone1Page() {
         if (ud.openSegments?.length) {
           const cycle = (dt / Math.max(ud.openTime ?? 1, 0.01) + ud.phase / (Math.PI * 2)) % 1
           const easing = Math.max(ud.openEasing ?? 2.4, 0.01)
-          const openCycle = cycle < 0.72
-            ? 1 - Math.pow(1 - cycle / 0.72, easing)
-            : Math.pow(1 - (cycle - 0.72) / 0.28, 2)
+          const holdClosed = 0.46
+          const openEnd = 0.95
+          const openCycle = cycle < holdClosed
+            ? 0
+            : cycle < openEnd
+              ? 1 - Math.pow(1 - (cycle - holdClosed) / (openEnd - holdClosed), easing)
+              : Math.pow(1 - (cycle - openEnd) / (1 - openEnd), 4.2)
           const openDistance = openCycle * (ud.openAmount ?? 0)
           ud.openSegments.forEach((segment) => {
             segment.wrapper.position.copy(segment.basePosition).addScaledVector(segment.direction, openDistance)
@@ -1214,6 +1254,10 @@ export default function WaterDone1Page() {
         ring.userData.openAmount = params.dysonRing4OpenAmount
         ring.userData.openTime = params.dysonRing4OpenTime
         ring.userData.openEasing = params.dysonRing4OpenEasing
+      } else if (key === 'dysonRing3') {
+        ring.userData.openAmount = params.dysonRing3OpenAmount
+        ring.userData.openTime = params.dysonRing3OpenTime
+        ring.userData.openEasing = params.dysonRing3OpenEasing
       }
       ring.userData.baseRotation.setFromEuler(new THREE.Euler(
         THREE.MathUtils.degToRad(params[`${key}RotX`]),
