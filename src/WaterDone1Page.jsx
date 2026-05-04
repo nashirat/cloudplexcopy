@@ -100,6 +100,7 @@ const DEFAULTS = {
   dysonRing1X: 0,
   dysonRing1Y: 0,
   dysonRing1Z: 0,
+  dysonRing1Visible: true,
   dysonRing1Size: 1,
   dysonRing1Speed: 1.35,
   dysonRing1AxisX: 1,
@@ -113,6 +114,7 @@ const DEFAULTS = {
   dysonRing2X: 0,
   dysonRing2Y: 0,
   dysonRing2Z: 0,
+  dysonRing2Visible: true,
   dysonRing2Size: 1,
   dysonRing2Speed: -1.35,
   dysonRing2AxisX: 1,
@@ -126,6 +128,7 @@ const DEFAULTS = {
   dysonRing3X: 0,
   dysonRing3Y: 0,
   dysonRing3Z: 0,
+  dysonRing3Visible: true,
   dysonRing3Size: 1,
   dysonRing3Speed: 1.08,
   dysonRing3AxisX: 1,
@@ -139,6 +142,7 @@ const DEFAULTS = {
   dysonRing4X: 0,
   dysonRing4Y: 0,
   dysonRing4Z: 0,
+  dysonRing4Visible: true,
   dysonRing4Size: 1,
   dysonRing4Speed: -1.08,
   dysonRing4AxisX: 1,
@@ -149,12 +153,15 @@ const DEFAULTS = {
   dysonRing4RotX: 0,
   dysonRing4RotY: 0,
   dysonRing4RotZ: 0,
+  dysonRing4OpenAmount: 1.8,
+  dysonRing4OpenTime: 3.1,
+  dysonRing4OpenEasing: 2.4,
   sunAzimuth: 270,
-  sunElevation: 90,
+  sunElevation: 24,
   sunColor: '#ffffff',
   sunDiskSize: 100,
-  sunIntensity: 0.9,
-  specStrength: 0.1,
+  sunIntensity: 0.55,
+  specStrength: 0.06,
   specShininess: 70,
   cameraHeight: 5.5,
   cameraYaw: 0,
@@ -522,6 +529,54 @@ function centerObjectOnLocalOrigin(object) {
   object.position.sub(center)
 }
 
+function setupRingOpenSegments(ring, pivot) {
+  ring.updateMatrixWorld(true)
+  const meshes = []
+  ring.traverse((child) => {
+    if (child.isMesh) meshes.push(child)
+  })
+
+  const segmentData = meshes.map((mesh) => {
+    const centerWorld = new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3())
+    const centerInRing = ring.worldToLocal(centerWorld.clone())
+    const centerInParent = mesh.parent.worldToLocal(centerWorld.clone())
+    return { mesh, centerWorld, centerInRing, centerInParent }
+  })
+
+  const xs = segmentData.map((segment) => segment.centerInRing.x)
+  const ys = segmentData.map((segment) => segment.centerInRing.y)
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+
+  const segments = segmentData.map(({ mesh, centerInRing, centerInParent }) => {
+    const wrapper = new THREE.Group()
+    wrapper.position.copy(centerInParent)
+    mesh.parent.add(wrapper)
+    wrapper.attach(mesh)
+
+    const left = Math.abs(centerInRing.x - minX)
+    const right = Math.abs(centerInRing.x - maxX)
+    const bottom = Math.abs(centerInRing.y - minY)
+    const top = Math.abs(centerInRing.y - maxY)
+    const closestEdge = Math.min(left, right, bottom, top)
+    const direction = new THREE.Vector3()
+    if (closestEdge === top) direction.set(0, 1, 0)
+    else if (closestEdge === bottom) direction.set(0, -1, 0)
+    else if (closestEdge === right) direction.set(1, 0, 0)
+    else direction.set(-1, 0, 0)
+
+    return {
+      wrapper,
+      basePosition: wrapper.position.clone(),
+      direction,
+    }
+  })
+
+  pivot.userData.openSegments = segments
+}
+
 function makeDysonIceMaterial(envMap, core = false) {
   void envMap
   return new THREE.MeshStandardMaterial({
@@ -615,6 +670,21 @@ function ColorRow({ label, value, onChange }) {
   )
 }
 
+function ToggleRow({ label, checked, onChange }) {
+  return (
+    <div className="row">
+      <label>{label}</label>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        style={{ width: 16, height: 16, cursor: 'pointer' }}
+      />
+      <span className="v">{checked ? 'On' : 'Off'}</span>
+    </div>
+  )
+}
+
 function DysonPartControls({ title, prefix, params, set, rotation = false }) {
   return (
     <details className="group">
@@ -622,6 +692,7 @@ function DysonPartControls({ title, prefix, params, set, rotation = false }) {
       <Slider label="Local X" value={params[`${prefix}X`]} min={-10} max={10} step={0.05} onChange={set(`${prefix}X`)} fmt={(v) => v.toFixed(2)} />
       <Slider label="Local Y" value={params[`${prefix}Y`]} min={-10} max={10} step={0.05} onChange={set(`${prefix}Y`)} fmt={(v) => v.toFixed(2)} />
       <Slider label="Local Z" value={params[`${prefix}Z`]} min={-10} max={10} step={0.05} onChange={set(`${prefix}Z`)} fmt={(v) => v.toFixed(2)} />
+      {rotation && <ToggleRow label="Visible" checked={params[`${prefix}Visible`]} onChange={set(`${prefix}Visible`)} />}
       <Slider label="Size" value={params[`${prefix}Size`]} min={0.01} max={5} step={0.01} onChange={set(`${prefix}Size`)} fmt={(v) => v.toFixed(2)} />
       {rotation && (
         <>
@@ -634,6 +705,13 @@ function DysonPartControls({ title, prefix, params, set, rotation = false }) {
           <Slider label="Gyro speed" value={params[`${prefix}GyroSpeed`]} min={-3} max={3} step={0.01} onChange={set(`${prefix}GyroSpeed`)} fmt={(v) => v.toFixed(2)} />
           <Slider label="Gyro tilt" value={params[`${prefix}GyroTilt`]} min={0} max={90} step={1} onChange={set(`${prefix}GyroTilt`)} fmt={(v) => `${v.toFixed(0)}°`} />
           <Slider label="Speed +/-" value={params[`${prefix}Speed`]} min={-5} max={5} step={0.01} onChange={set(`${prefix}Speed`)} fmt={(v) => v.toFixed(2)} />
+          {prefix === 'dysonRing4' && (
+            <>
+              <Slider label="Open strength" value={params.dysonRing4OpenAmount} min={0} max={5} step={0.05} onChange={set('dysonRing4OpenAmount')} fmt={(v) => v.toFixed(2)} />
+              <Slider label="Open time" value={params.dysonRing4OpenTime} min={0.2} max={8} step={0.05} onChange={set('dysonRing4OpenTime')} fmt={(v) => `${v.toFixed(2)}s`} />
+              <Slider label="Easing" value={params.dysonRing4OpenEasing} min={0.2} max={6} step={0.05} onChange={set('dysonRing4OpenEasing')} fmt={(v) => v.toFixed(2)} />
+            </>
+          )}
         </>
       )}
     </details>
@@ -682,6 +760,8 @@ export default function WaterDone1Page() {
     water: null,
     sunDisk: null,
     dirLight: null,
+    hemiLight: null,
+    ambientLight: null,
     sunDistance: 5000,
   })
 
@@ -718,7 +798,8 @@ export default function WaterDone1Page() {
     scene.background = skyMap
     scene.environment = skyMap
 
-    // Sun direction from defaults — will be live-updated when sliders move.
+    // Sun direction still drives the water shader, but the visible hard sun
+    // disk is hidden; the reference reads as broad sky light, not direct sun.
     const initialSunDir = sphericalToDir(DEFAULTS.sunAzimuth, DEFAULTS.sunElevation)
 
     // Visible sun disk. Unlit so it stays bright through tone-mapping; the
@@ -729,17 +810,20 @@ export default function WaterDone1Page() {
     )
     sunDisk.scale.setScalar(DEFAULTS.sunDiskSize)
     sunDisk.position.copy(initialSunDir).multiplyScalar(refs.current.sunDistance)
+    sunDisk.visible = false
     scene.add(sunDisk)
 
-    // Directional light from the sun. Affects nothing in v1 (no objects)
-    // but will be useful when we add boats/rocks later. Also: the Water
-    // shader uses sunDirection independently for its specular calculation.
+    // Keep a very weak directional component, then let broad sky fill do most
+    // of the lighting like the cloudy reference frames.
     const dirLight = new THREE.DirectionalLight(0xffffff, DEFAULTS.sunIntensity)
     dirLight.position.copy(initialSunDir).multiplyScalar(100)
     dirLight.target.position.set(0, 0, 0)
     scene.add(dirLight)
     scene.add(dirLight.target)
-    scene.add(new THREE.AmbientLight(0x223344, 0.4))
+    const hemiLight = new THREE.HemisphereLight(0xeaf5ff, 0x536a7a, 0.12)
+    const ambientLight = new THREE.AmbientLight(0x526c82, 0.04)
+    scene.add(hemiLight)
+    scene.add(ambientLight)
 
     // Water — Three.js's Reflector + animated normal-map shader.
     const waterNormals = new THREE.TextureLoader().load(
@@ -831,6 +915,14 @@ export default function WaterDone1Page() {
         if (!child.isMesh) return
         child.castShadow = false
         child.receiveShadow = false
+        const materials = Array.isArray(child.material) ? child.material : [child.material]
+        materials.forEach((material) => {
+          if (!material) return
+          material.envMapIntensity = Math.min(material.envMapIntensity ?? 1, 0.35)
+          material.roughness = Math.max(material.roughness ?? 0.5, 0.72)
+          material.metalness = Math.min(material.metalness ?? 0, 0.02)
+          material.needsUpdate = true
+        })
       })
       environmentGroup.add(environment)
     })
@@ -870,6 +962,9 @@ export default function WaterDone1Page() {
         speed: DEFAULTS[`${motion.key}Speed`],
         baseRotation: new THREE.Quaternion(),
         baseQuaternion: pivot.quaternion.clone(),
+        openAmount: motion.key === 'dysonRing4' ? DEFAULTS.dysonRing4OpenAmount : 0,
+        openTime: motion.key === 'dysonRing4' ? DEFAULTS.dysonRing4OpenTime : 1,
+        openEasing: motion.key === 'dysonRing4' ? DEFAULTS.dysonRing4OpenEasing : 2.4,
       }
       dysonRings.push(pivot)
       dysonGroup.add(pivot)
@@ -878,6 +973,7 @@ export default function WaterDone1Page() {
         const ring = gltf.scene
         applyDysonIceMaterial(ring, skyMap, false)
         centerObjectOnLocalOrigin(ring)
+        if (motion.key === 'dysonRing4') setupRingOpenSegments(ring, pivot)
         pivot.add(ring)
       })
     })
@@ -888,6 +984,8 @@ export default function WaterDone1Page() {
     refs.current.water = water
     refs.current.sunDisk = sunDisk
     refs.current.dirLight = dirLight
+    refs.current.hemiLight = hemiLight
+    refs.current.ambientLight = ambientLight
     refs.current.scene = scene
     refs.current.environmentGroup = environmentGroup
     refs.current.dysonGroup = dysonGroup
@@ -955,6 +1053,17 @@ export default function WaterDone1Page() {
           Math.sin(dt * ud.wobbleSpeed * Math.abs(ringSpeed) + ud.phase) * ud.wobbleAmp,
         )
         ring.quaternion.copy(ud.baseQuaternion).multiply(ud.baseRotation).multiply(gyroFrame).multiply(wobble).multiply(spin)
+        if (ud.openSegments?.length) {
+          const cycle = (dt / Math.max(ud.openTime ?? 1, 0.01) + ud.phase / (Math.PI * 2)) % 1
+          const easing = Math.max(ud.openEasing ?? 2.4, 0.01)
+          const openCycle = cycle < 0.72
+            ? 1 - Math.pow(1 - cycle / 0.72, easing)
+            : Math.pow(1 - (cycle - 0.72) / 0.28, 2)
+          const openDistance = openCycle * (ud.openAmount ?? 0)
+          ud.openSegments.forEach((segment) => {
+            segment.wrapper.position.copy(segment.basePosition).addScaledVector(segment.direction, openDistance)
+          })
+        }
       })
 
       const look = refs.current.cameraLook
@@ -1088,6 +1197,7 @@ export default function WaterDone1Page() {
     }
     r.dysonRings?.forEach((ring) => {
       const key = ring.userData.key
+      ring.visible = params[`${key}Visible`]
       ring.position.set(params[`${key}X`], params[`${key}Y`], params[`${key}Z`])
       ring.scale.setScalar(params[`${key}Size`])
       ring.userData.speed = params[`${key}Speed`]
@@ -1100,6 +1210,11 @@ export default function WaterDone1Page() {
       ring.userData.axis.normalize()
       ring.userData.gyroSpeed = params[`${key}GyroSpeed`]
       ring.userData.gyroTilt = params[`${key}GyroTilt`]
+      if (key === 'dysonRing4') {
+        ring.userData.openAmount = params.dysonRing4OpenAmount
+        ring.userData.openTime = params.dysonRing4OpenTime
+        ring.userData.openEasing = params.dysonRing4OpenEasing
+      }
       ring.userData.baseRotation.setFromEuler(new THREE.Euler(
         THREE.MathUtils.degToRad(params[`${key}RotX`]),
         THREE.MathUtils.degToRad(params[`${key}RotY`]),
@@ -1128,12 +1243,15 @@ export default function WaterDone1Page() {
     r.water.material.uniforms.uSpecStrength.value  = params.specStrength
     r.water.material.uniforms.uSpecShininess.value = params.specShininess
 
-    // Sun direction → updates Water's specular AND the visible disk + light.
+    // Sun direction still affects water specular; the visible disk stays hidden.
     const dir = sphericalToDir(params.sunAzimuth, params.sunElevation)
     r.water.material.uniforms.sunDirection.value.copy(dir)
-    r.sunDisk.position.copy(dir).multiplyScalar(r.sunDistance)
-    r.sunDisk.material.color.set(params.sunColor)
-    r.sunDisk.scale.setScalar(params.sunDiskSize)
+    if (r.sunDisk) {
+      r.sunDisk.visible = false
+      r.sunDisk.position.copy(dir).multiplyScalar(r.sunDistance)
+      r.sunDisk.material.color.set(params.sunColor)
+      r.sunDisk.scale.setScalar(params.sunDiskSize)
+    }
     r.dirLight.position.copy(dir).multiplyScalar(100)
     r.dirLight.intensity = params.sunIntensity
 
