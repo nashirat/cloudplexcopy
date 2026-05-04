@@ -6,6 +6,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import './latestwater/LatestWaterPage.css'
 
 const ChromaticAberrationShader = {
@@ -45,16 +46,16 @@ const DEFAULTS = {
   capillaryScale:    95,
   capillaryStrength: 0.3,
   capillaryDrift:    0.105,
-  // Ripple (concentric rings from a point — placeholder for object impact)
+  // Ripple (uneven concentric water disturbance from a point)
   rippleX:         0,
-  rippleZ:        20,
-  rippleStrength:  0,
-  rippleFreq:      1.2,
-  rippleSpeed:     6,
-  rippleDecay:     0.03,
-  rippleRadius:    80,
+  rippleZ:        35,
+  rippleStrength:  2.1,
+  rippleFreq:      0.55,
+  rippleSpeed:     2.4,
+  rippleDecay:     0.018,
+  rippleRadius:    110,
   centerPeakHeight:    0,
-  centerPeakSharpness: 0.15,
+  centerPeakSharpness: 0.035,
   sphereRadius:    1.5,
   sphereColor:     '#a8cce0',
   // Fine grain (tiny freckle-like ripples overlay)
@@ -81,6 +82,68 @@ const DEFAULTS = {
   reflAmbient:    0,
   fresnelPower:   8.6,
   scatterMix:     0.35,
+  // Dyson position — rings rotate in place around the centered core.
+  dysonX:         0,
+  dysonZ:         35,
+  dysonHeight:    4.5,
+  dysonScale:     1.55,
+  dysonRingSpeed: 1.0,
+  dysonCoreX:     0,
+  dysonCoreY:     0,
+  dysonCoreZ:     0,
+  dysonCoreSize:  1.05,
+  dysonRing1X:    0,
+  dysonRing1Y:    0,
+  dysonRing1Z:    0,
+  dysonRing1Size: 1,
+  dysonRing1Speed: 1.35,
+  dysonRing1AxisX: 1,
+  dysonRing1AxisY: 0,
+  dysonRing1AxisZ: 0,
+  dysonRing1GyroSpeed: 0,
+  dysonRing1GyroTilt: 0,
+  dysonRing1RotX: 0,
+  dysonRing1RotY: 0,
+  dysonRing1RotZ: 0,
+  dysonRing2X:    0,
+  dysonRing2Y:    0,
+  dysonRing2Z:    0,
+  dysonRing2Size: 1,
+  dysonRing2Speed: -1.35,
+  dysonRing2AxisX: 1,
+  dysonRing2AxisY: 0,
+  dysonRing2AxisZ: 0,
+  dysonRing2GyroSpeed: 0,
+  dysonRing2GyroTilt: 0,
+  dysonRing2RotX: 0,
+  dysonRing2RotY: 0,
+  dysonRing2RotZ: 0,
+  dysonRing3X:    0,
+  dysonRing3Y:    0,
+  dysonRing3Z:    0,
+  dysonRing3Size: 1,
+  dysonRing3Speed: 1.08,
+  dysonRing3AxisX: 1,
+  dysonRing3AxisY: 0,
+  dysonRing3AxisZ: 0,
+  dysonRing3GyroSpeed: 0.55,
+  dysonRing3GyroTilt: 35,
+  dysonRing3RotX: 0,
+  dysonRing3RotY: 0,
+  dysonRing3RotZ: 0,
+  dysonRing4X:    0,
+  dysonRing4Y:    0,
+  dysonRing4Z:    0,
+  dysonRing4Size: 1,
+  dysonRing4Speed: -1.08,
+  dysonRing4AxisX: 1,
+  dysonRing4AxisY: 0,
+  dysonRing4AxisZ: 0,
+  dysonRing4GyroSpeed: -0.55,
+  dysonRing4GyroTilt: 35,
+  dysonRing4RotX: 0,
+  dysonRing4RotY: 0,
+  dysonRing4RotZ: 0,
   // Sun
   sunAzimuth:    243,
   sunElevation:   4,
@@ -100,6 +163,45 @@ const DEFAULTS = {
   bloomThreshold: 0.85,
   caStrength:     0.0015,
 }
+
+const DYSON_RING_MOTION = [
+  {
+    file: 'ring_01.glb',
+    key: 'dysonRing1',
+    axis: new THREE.Vector3(1, 0, 0).normalize(),
+    wobbleAxis: new THREE.Vector3(1, 0, 0).normalize(),
+    wobbleSpeed: 0.9,
+    wobbleAmp: 0,
+    phase: 0.0,
+  },
+  {
+    file: 'ring_02.glb',
+    key: 'dysonRing2',
+    axis: new THREE.Vector3(1, 0, 0).normalize(),
+    wobbleAxis: new THREE.Vector3(1, 0, 0).normalize(),
+    wobbleSpeed: 0.72,
+    wobbleAmp: 0,
+    phase: 0,
+  },
+  {
+    file: 'ring_03.glb',
+    key: 'dysonRing3',
+    axis: new THREE.Vector3(1, 0.5, 0).normalize(),
+    wobbleAxis: new THREE.Vector3(1, 0.5, 0).normalize(),
+    wobbleSpeed: 1.05,
+    wobbleAmp: 0,
+    phase: 0,
+  },
+  {
+    file: 'ring_04.glb',
+    key: 'dysonRing4',
+    axis: new THREE.Vector3(1, 0.5, 0).normalize(),
+    wobbleAxis: new THREE.Vector3(1, 0.5, 0).normalize(),
+    wobbleSpeed: 0.82,
+    wobbleAmp: 0,
+    phase: 0,
+  },
+]
 
 // Patched vertex shader — actually displaces the water surface up/down based on
 // noise so the plane has real wave geometry. Without this, the surface is flat
@@ -275,23 +377,30 @@ const PATCHED_WATER_FS = /* glsl */`
     float slope = length( surfaceNormal.xz );
     float crestMask = smoothstep( uCrestThreshold, uCrestThreshold + uCrestSharpness, slope );
 
-    // Circular ripple — perturbs the normal in a concentric pattern emanating
-    // from uRippleOrigin (XZ world position). Falls off with distance via
-    // exponential decay; sin gives the wave rings; spatial gradient of the
-    // wave gives the normal tilt direction (radial outward).
+    // Natural ripple — same point-origin ripple controls, but the wavefront is
+    // warped and uneven so it does not read as a perfect graphic target.
     vec2 rdv = worldPosition.xz - uRippleOrigin.xz;
     float rdist = length( rdv );
-    float rEnvelope = smoothstep( uRippleRadius, 0.0, rdist );
-    float rPhase = rdist * uRippleFreq - time * uRippleSpeed;
-    float rDamp = exp( -rdist * uRippleDecay ) * rEnvelope;
-    // Derivative: d/dx of sin(rdist * f) gives cos(...) * f * (rdv / rdist)
-    vec2 rDir = rdist > 0.001 ? rdv / rdist : vec2( 0.0 );
-    float rSlope = cos( rPhase ) * uRippleFreq * uRippleStrength * rDamp;
-    // Central peak — gaussian bump; slope = 2*k*r*gauss*h, tilts normal outward.
-    float centerGauss = exp( -rdist * rdist * uCenterPeakSharpness );
-    float centerSlope = 2.0 * uCenterPeakSharpness * rdist * centerGauss * uCenterPeakHeight;
-    float totalSlope = rSlope + centerSlope;
-    surfaceNormal = normalize( surfaceNormal + vec3( rDir.x * totalSlope, 0.0, rDir.y * totalSlope ) );
+    float radius = max( uRippleRadius, 0.1 );
+    float rr = rdist / radius;
+    vec4 warpA = getNoise( worldPosition.xz * size * 0.55 + vec2( time * 0.06, -time * 0.04 ) );
+    vec4 warpB = getNoise( worldPosition.xz * size * 1.35 + vec2( -time * 0.11, time * 0.08 ) );
+    vec2 warpedRdv = rdv + ( warpA.xz * 0.7 + warpB.xz * 0.3 ) * radius * 0.028;
+    float wrDist = length( warpedRdv );
+    vec2 rDir = wrDist > 0.001 ? warpedRdv / wrDist : vec2( 0.0 );
+    float edgeFade = smoothstep( 1.0, 0.0, rr );
+    float rDamp = exp( -wrDist * uRippleDecay ) * edgeFade;
+    float rPhase = wrDist * uRippleFreq - time * uRippleSpeed + warpA.y * 0.85 + warpB.y * 0.35;
+    float unevenAmp = 0.68 + 0.32 * clamp( warpA.w + 0.5, 0.0, 1.0 );
+    float ringSlope = (
+      cos( rPhase ) +
+      cos( rPhase * 1.37 + warpB.z * 1.4 ) * 0.22
+    ) * uRippleFreq * uRippleStrength * rDamp * unevenAmp * 1.65;
+    surfaceNormal = normalize( surfaceNormal + vec3( rDir.x * ringSlope, 0.0, rDir.y * ringSlope ) );
+
+    vec4 rippleChop = getNoise( worldPosition.xz * size * ( uRippleFreq * 4.0 + 2.0 ) + vec2( time * uRippleSpeed * 0.55, -time * uRippleSpeed * 0.37 ) );
+    float chopMask = edgeFade * uRippleStrength * 0.07;
+    surfaceNormal = normalize( surfaceNormal + rippleChop.xzy * vec3( chopMask, 0.0, chopMask ) );
 
     vec3 diffuseLight = vec3(0.0);
     vec3 specularLight = vec3(0.0);
@@ -372,6 +481,38 @@ function sphericalToDir(azDeg, elDeg) {
   ).normalize()
 }
 
+function centerObjectOnLocalOrigin(object) {
+  const box = new THREE.Box3().setFromObject(object)
+  const center = box.getCenter(new THREE.Vector3())
+  object.position.sub(center)
+}
+
+function makeDysonIceMaterial(envMap, core = false) {
+  void envMap
+  return new THREE.MeshStandardMaterial({
+    color: new THREE.Color(core ? '#d7edf6' : '#8fb6cf'),
+    roughness: core ? 0.72 : 0.84,
+    metalness: 0,
+    transparent: false,
+    opacity: 1,
+    depthWrite: true,
+    side: THREE.DoubleSide,
+  })
+}
+
+function applyDysonIceMaterial(object, envMap, core = false) {
+  object.traverse((child) => {
+    if (!child.isMesh) return
+    const oldMaterial = child.material
+    child.material = makeDysonIceMaterial(envMap, core)
+    child.castShadow = false
+    child.receiveShadow = false
+    child.renderOrder = core ? 2 : 1
+    if (Array.isArray(oldMaterial)) oldMaterial.forEach((m) => m.dispose())
+    else oldMaterial?.dispose()
+  })
+}
+
 // =============================================================================
 // Slider row — one labelled range input that mirrors a numeric value.
 // =============================================================================
@@ -415,6 +556,31 @@ function ColorRow({ label, value, onChange }) {
       <input type="color" value={value} onChange={(e) => onChange(e.target.value)} />
       <span className="v">{value}</span>
     </div>
+  )
+}
+
+function DysonPartControls({ title, prefix, params, set, rotation = false }) {
+  return (
+    <details className="group">
+      <summary>{title}</summary>
+      <Slider label="Local X" value={params[`${prefix}X`]} min={-10} max={10} step={0.05} onChange={set(`${prefix}X`)} fmt={(v) => v.toFixed(2)} />
+      <Slider label="Local Y" value={params[`${prefix}Y`]} min={-10} max={10} step={0.05} onChange={set(`${prefix}Y`)} fmt={(v) => v.toFixed(2)} />
+      <Slider label="Local Z" value={params[`${prefix}Z`]} min={-10} max={10} step={0.05} onChange={set(`${prefix}Z`)} fmt={(v) => v.toFixed(2)} />
+      <Slider label="Size" value={params[`${prefix}Size`]} min={0.01} max={5} step={0.01} onChange={set(`${prefix}Size`)} fmt={(v) => v.toFixed(2)} />
+      {rotation && (
+        <>
+          <Slider label="Rot X" value={params[`${prefix}RotX`]} min={-180} max={180} step={1} onChange={set(`${prefix}RotX`)} fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Rot Y" value={params[`${prefix}RotY`]} min={-180} max={180} step={1} onChange={set(`${prefix}RotY`)} fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Rot Z" value={params[`${prefix}RotZ`]} min={-180} max={180} step={1} onChange={set(`${prefix}RotZ`)} fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Axis X" value={params[`${prefix}AxisX`]} min={-1} max={1} step={0.01} onChange={set(`${prefix}AxisX`)} fmt={(v) => v.toFixed(2)} />
+          <Slider label="Axis Y" value={params[`${prefix}AxisY`]} min={-1} max={1} step={0.01} onChange={set(`${prefix}AxisY`)} fmt={(v) => v.toFixed(2)} />
+          <Slider label="Axis Z" value={params[`${prefix}AxisZ`]} min={-1} max={1} step={0.01} onChange={set(`${prefix}AxisZ`)} fmt={(v) => v.toFixed(2)} />
+          <Slider label="Gyro speed" value={params[`${prefix}GyroSpeed`]} min={-3} max={3} step={0.01} onChange={set(`${prefix}GyroSpeed`)} fmt={(v) => v.toFixed(2)} />
+          <Slider label="Gyro tilt" value={params[`${prefix}GyroTilt`]} min={0} max={90} step={1} onChange={set(`${prefix}GyroTilt`)} fmt={(v) => `${v.toFixed(0)}°`} />
+          <Slider label="Speed +/-" value={params[`${prefix}Speed`]} min={-5} max={5} step={0.01} onChange={set(`${prefix}Speed`)} fmt={(v) => v.toFixed(2)} />
+        </>
+      )}
+    </details>
   )
 }
 
@@ -584,6 +750,49 @@ export default function WaterDone1Page() {
 
     scene.add(water)
 
+    // Dyson — central ice orb wrapped by 4 independently animated ring pivots.
+    const dysonGroup = new THREE.Group()
+    dysonGroup.position.set(DEFAULTS.dysonX, DEFAULTS.dysonHeight, DEFAULTS.dysonZ)
+    dysonGroup.scale.setScalar(DEFAULTS.dysonScale)
+    dysonGroup.userData.ringSpeed = DEFAULTS.dysonRingSpeed
+    scene.add(dysonGroup)
+
+    const gltfLoader = new GLTFLoader()
+    const dysonRings = []
+    const dysonCore = new THREE.Group()
+    dysonCore.position.set(DEFAULTS.dysonCoreX, DEFAULTS.dysonCoreY, DEFAULTS.dysonCoreZ)
+    dysonCore.scale.setScalar(DEFAULTS.dysonCoreSize)
+    dysonGroup.add(dysonCore)
+    refs.current.dysonCore = dysonCore
+
+    gltfLoader.load('/assets/dyson/ice_orb.glb', (gltf) => {
+      const orb = gltf.scene
+      applyDysonIceMaterial(orb, skyMap, true)
+      centerObjectOnLocalOrigin(orb)
+      dysonCore.add(orb)
+    })
+
+    DYSON_RING_MOTION.forEach((motion) => {
+      const pivot = new THREE.Group()
+      pivot.position.set(DEFAULTS[`${motion.key}X`], DEFAULTS[`${motion.key}Y`], DEFAULTS[`${motion.key}Z`])
+      pivot.scale.setScalar(DEFAULTS[`${motion.key}Size`])
+      pivot.userData = {
+        ...motion,
+        speed: DEFAULTS[`${motion.key}Speed`],
+        baseRotation: new THREE.Quaternion(),
+        baseQuaternion: pivot.quaternion.clone(),
+      }
+      dysonRings.push(pivot)
+      dysonGroup.add(pivot)
+
+      gltfLoader.load(`/assets/dyson/${motion.file}`, (gltf) => {
+        const ring = gltf.scene
+        applyDysonIceMaterial(ring, skyMap, false)
+        centerObjectOnLocalOrigin(ring)
+        pivot.add(ring)
+      })
+    })
+
     // Stash refs.
     refs.current.renderer = renderer
     refs.current.camera = camera
@@ -591,6 +800,9 @@ export default function WaterDone1Page() {
     refs.current.sunDisk = sunDisk
     refs.current.dirLight = dirLight
     refs.current.scene = scene
+    refs.current.dysonGroup = dysonGroup
+    refs.current.dysonRings = dysonRings
+    refs.current.dysonClock = 0
 
     // Post-processing.
     const composer = new EffectComposer(renderer)
@@ -608,7 +820,6 @@ export default function WaterDone1Page() {
     refs.current.bloomPass = bloomPass
     refs.current.caPass = caPass
 
-    // Render loop.
     const clock = new THREE.Clock()
     let raf = 0
     let fpsFrames = 0
@@ -623,6 +834,30 @@ export default function WaterDone1Page() {
       // mutate water.material.userData.speed.
       const speed = water.material.userData.speed ?? DEFAULTS.waveSpeed
       water.material.uniforms.time.value += delta * speed
+
+      // Dyson — only the rings rotate; the group and core stay fixed in place.
+      refs.current.dysonClock += delta
+      const dt = refs.current.dysonClock
+      const dg = refs.current.dysonGroup
+      const ringSpeed = dg?.userData.ringSpeed ?? DEFAULTS.dysonRingSpeed
+      refs.current.dysonRings?.forEach((ring) => {
+        const ud = ring.userData
+        const gyroTilt = THREE.MathUtils.degToRad(ud.gyroTilt ?? 0)
+        const gyroPhase = dt * (ud.gyroSpeed ?? 0) * ringSpeed + ud.phase
+        const gyroFrame = new THREE.Quaternion()
+          .setFromAxisAngle(new THREE.Vector3(0, 1, 0), gyroPhase)
+          .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), gyroTilt))
+        const spin = new THREE.Quaternion().setFromAxisAngle(
+          ud.axis,
+          dt * ud.speed * ringSpeed + ud.phase,
+        )
+        const wobble = new THREE.Quaternion().setFromAxisAngle(
+          ud.wobbleAxis,
+          Math.sin(dt * ud.wobbleSpeed * Math.abs(ringSpeed) + ud.phase) * ud.wobbleAmp,
+        )
+        ring.quaternion.copy(ud.baseQuaternion).multiply(ud.baseRotation).multiply(gyroFrame).multiply(wobble).multiply(spin)
+      })
+
       composer.render()
       fpsFrames++
       fpsAccum += delta
@@ -657,6 +892,13 @@ export default function WaterDone1Page() {
       skyMap.dispose()
       sunDisk.geometry.dispose()
       sunDisk.material.dispose()
+      dysonGroup.traverse((o) => {
+        if (o.isMesh) {
+          o.geometry?.dispose()
+          if (Array.isArray(o.material)) o.material.forEach((m) => m.dispose())
+          else o.material?.dispose()
+        }
+      })
       renderer.dispose()
       if (renderer.domElement.parentNode) renderer.domElement.parentNode.removeChild(renderer.domElement)
     }
@@ -688,10 +930,42 @@ export default function WaterDone1Page() {
     r.water.material.uniforms.uCapillaryDrift.value = params.capillaryDrift
     r.water.material.uniforms.uRippleOrigin.value.set(params.rippleX, 0, params.rippleZ)
     r.water.material.uniforms.uRippleStrength.value = params.rippleStrength
-    r.water.material.uniforms.uRippleFreq.value = params.rippleFreq
-    r.water.material.uniforms.uRippleSpeed.value = params.rippleSpeed
-    r.water.material.uniforms.uRippleDecay.value = params.rippleDecay
     r.water.material.uniforms.uRippleRadius.value = params.rippleRadius
+    r.water.material.uniforms.uRippleFreq.value = params.rippleFreq
+    r.water.material.uniforms.uRippleDecay.value = params.rippleDecay
+    r.water.material.uniforms.uRippleSpeed.value = params.rippleSpeed
+
+    // Dyson base transform. Position is fixed; only ring quaternions animate.
+    if (r.dysonGroup) {
+      r.dysonGroup.position.set(params.dysonX, params.dysonHeight, params.dysonZ)
+      r.dysonGroup.rotation.set(0, 0, 0)
+      r.dysonGroup.scale.setScalar(params.dysonScale)
+      r.dysonGroup.userData.ringSpeed = params.dysonRingSpeed
+    }
+    if (r.dysonCore) {
+      r.dysonCore.position.set(params.dysonCoreX, params.dysonCoreY, params.dysonCoreZ)
+      r.dysonCore.scale.setScalar(params.dysonCoreSize)
+    }
+    r.dysonRings?.forEach((ring) => {
+      const key = ring.userData.key
+      ring.position.set(params[`${key}X`], params[`${key}Y`], params[`${key}Z`])
+      ring.scale.setScalar(params[`${key}Size`])
+      ring.userData.speed = params[`${key}Speed`]
+      ring.userData.axis.set(
+        params[`${key}AxisX`],
+        params[`${key}AxisY`],
+        params[`${key}AxisZ`],
+      )
+      if (ring.userData.axis.lengthSq() < 0.0001) ring.userData.axis.set(1, 0, 0)
+      ring.userData.axis.normalize()
+      ring.userData.gyroSpeed = params[`${key}GyroSpeed`]
+      ring.userData.gyroTilt = params[`${key}GyroTilt`]
+      ring.userData.baseRotation.setFromEuler(new THREE.Euler(
+        THREE.MathUtils.degToRad(params[`${key}RotX`]),
+        THREE.MathUtils.degToRad(params[`${key}RotY`]),
+        THREE.MathUtils.degToRad(params[`${key}RotZ`]),
+      ))
+    })
     r.water.material.uniforms.uCenterPeakHeight.value = params.centerPeakHeight
     r.water.material.uniforms.uCenterPeakSharpness.value = params.centerPeakSharpness
     r.water.material.uniforms.uGrainScale.value = params.grainScale
@@ -802,7 +1076,21 @@ export default function WaterDone1Page() {
           <Slider label="Exposure"    value={params.exposure}        min={0.3}  max={2}    step={0.05} onChange={set('exposure')}        fmt={(v) => v.toFixed(2)} />
         </details>
 
-        <details className="group">
+        <details className="group" open>
+          <summary>Dyson</summary>
+          <Slider label="X"           value={params.dysonX}          min={-100} max={100}  step={0.5}  onChange={set('dysonX')}          fmt={(v) => v.toFixed(1)} />
+          <Slider label="Z"           value={params.dysonZ}          min={-100} max={100}  step={0.5}  onChange={set('dysonZ')}          fmt={(v) => v.toFixed(1)} />
+          <Slider label="Height"      value={params.dysonHeight}     min={0}    max={30}   step={0.1}  onChange={set('dysonHeight')}     fmt={(v) => v.toFixed(1)} />
+          <Slider label="Scale"       value={params.dysonScale}      min={0.2}  max={10}   step={0.05} onChange={set('dysonScale')}      fmt={(v) => v.toFixed(2)} />
+          <Slider label="Ring speed"  value={params.dysonRingSpeed}  min={-3}   max={3}    step={0.05} onChange={set('dysonRingSpeed')}  fmt={(v) => v.toFixed(2)} />
+        </details>
+        <DysonPartControls title="Core" prefix="dysonCore" params={params} set={set} />
+        <DysonPartControls title="Ring 1" prefix="dysonRing1" params={params} set={set} rotation />
+        <DysonPartControls title="Ring 2" prefix="dysonRing2" params={params} set={set} rotation />
+        <DysonPartControls title="Ring 3" prefix="dysonRing3" params={params} set={set} rotation />
+        <DysonPartControls title="Ring 4" prefix="dysonRing4" params={params} set={set} rotation />
+
+        <details className="group" open>
           <summary>Ripple</summary>
           <Slider label="X"           value={params.rippleX}         min={-100} max={100}  step={0.5}  onChange={set('rippleX')}         fmt={(v) => v.toFixed(1)} />
           <Slider label="Z"           value={params.rippleZ}         min={-100} max={100}  step={0.5}  onChange={set('rippleZ')}         fmt={(v) => v.toFixed(1)} />
