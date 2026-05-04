@@ -1,0 +1,56 @@
+{
+  "igloo": {
+    "x": 0,
+    "y": -0.3,
+    "z": 0.1,
+    "rotX": 0,
+    "rotY": -1,
+    "rotZ": 0,
+    "scale": 0.9
+  },
+  "ground": {
+    "x": 0,
+    "y": 0.04,
+    "z": 0,
+    "rotX": 0,
+    "rotY": 0,
+    "rotZ": 0,
+    "scale": 2.9
+  },
+  "mountain": {
+    "x": 1.4,
+    "y": 0.3,
+    "z": -1.4,
+    "rotX": 0,
+    "rotY": 0,
+    "rotZ": 0,
+    "scale": 1
+  },
+  "camera": {
+    "x": -2.45,
+    "y": 1.15,
+    "z": 2.55,
+    "targetX": 0,
+    "targetY": 0,
+    "targetZ": 0,
+    "fov": 33,
+    "swayX": 0.05,
+    "swayY": 0.03,
+    "swayLerp": 0.14
+  },
+  "interaction": {
+    "pointerCenterNdcRadius": 1.1,
+    "hoverWorldNear": 0.15,
+    "hoverWorldFar": 0.75,
+    "hoverScreenNear": 0,
+    "hoverScreenFar": 0.15,
+    "baseDisplacement": 0.28,
+    "hoverWorldBase": 1,
+    "hoverWorldAmp": 0.18,
+    "hoverScreenBase": 0.62,
+    "hoverScreenAmp": 1.5,
+    "displacementScale": 0.85,
+    "yMaskBase": 0.52,
+    "yMaskTop": 0.36
+  }
+}
