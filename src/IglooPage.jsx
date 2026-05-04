@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js'
 import * as THREE from 'three'
+import defaultIglooSceneControls from '../igloo-scene-controls.json'
 import './IglooPage.css'
 
 const IGLOO_PATH = '/igloo.drc'
@@ -364,26 +365,28 @@ const sanitizeInteraction = (input) => {
   }
 }
 
+const getDefaultTransforms = () => ({
+  igloo: sanitizeTransform(defaultIglooSceneControls?.igloo),
+  ground: sanitizeTransform(
+    defaultIglooSceneControls?.ground,
+    DEFAULT_GROUND_TRANSFORM,
+  ),
+  mountain: sanitizeTransform(
+    defaultIglooSceneControls?.mountain,
+    DEFAULT_MOUNTAIN_TRANSFORM,
+  ),
+  camera: sanitizeCamera(defaultIglooSceneControls?.camera),
+  interaction: sanitizeInteraction(defaultIglooSceneControls?.interaction),
+})
+
 const getStoredTransforms = () => {
   if (typeof window === 'undefined') {
-    return {
-      igloo: { ...DEFAULT_TRANSFORM },
-      ground: { ...DEFAULT_GROUND_TRANSFORM },
-      mountain: { ...DEFAULT_MOUNTAIN_TRANSFORM },
-      camera: { ...DEFAULT_CAMERA },
-      interaction: { ...DEFAULT_INTERACTION },
-    }
+    return getDefaultTransforms()
   }
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) {
-      return {
-        igloo: { ...DEFAULT_TRANSFORM },
-        ground: { ...DEFAULT_GROUND_TRANSFORM },
-        mountain: { ...DEFAULT_MOUNTAIN_TRANSFORM },
-        camera: { ...DEFAULT_CAMERA },
-        interaction: { ...DEFAULT_INTERACTION },
-      }
+      return getDefaultTransforms()
     }
     const parsed = JSON.parse(raw)
     return {
@@ -394,13 +397,7 @@ const getStoredTransforms = () => {
       interaction: sanitizeInteraction(parsed?.interaction),
     }
   } catch {
-    return {
-      igloo: { ...DEFAULT_TRANSFORM },
-      ground: { ...DEFAULT_GROUND_TRANSFORM },
-      mountain: { ...DEFAULT_MOUNTAIN_TRANSFORM },
-      camera: { ...DEFAULT_CAMERA },
-      interaction: { ...DEFAULT_INTERACTION },
-    }
+    return getDefaultTransforms()
   }
 }
 
@@ -1454,9 +1451,50 @@ export default function IglooPage() {
     setter((prev) => ({ ...prev, [key]: nextValue }))
   }
 
+  const resetSettings = () => {
+    const defaults = getDefaultTransforms()
+    if (typeof window !== 'undefined') {
+      window.localStorage.removeItem(STORAGE_KEY)
+    }
+    setIglooTransform(defaults.igloo)
+    setGroundTransform(defaults.ground)
+    setMountainTransform(defaults.mountain)
+    setCameraTransform(defaults.camera)
+    setInteractionSettings(defaults.interaction)
+  }
+
+  const exportSettings = () => {
+    const data = {
+      igloo: iglooTransform,
+      ground: groundTransform,
+      mountain: mountainTransform,
+      camera: cameraTransform,
+      interaction: interactionSettings,
+    }
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'igloo-scene-controls.json'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="igloo-page">
       <div className="igloo-controls">
+        <div className="igloo-controls__actions">
+          <button className="igloo-controls__button" onClick={exportSettings}>
+            Export Settings JSON
+          </button>
+          <button className="igloo-controls__button" onClick={resetSettings}>
+            Reset Local Settings
+          </button>
+        </div>
         <details className="igloo-controls__section" open>
           <summary className="igloo-controls__summary">Igloo</summary>
           <div className="igloo-controls__grid">

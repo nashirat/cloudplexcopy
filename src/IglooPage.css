@@ -76,6 +76,28 @@
   transform: rotate(90deg);
 }
 
+.igloo-controls__actions {
+  display: grid;
+  gap: 8px;
+}
+
+.igloo-controls__button {
+  width: 100%;
+  border: 1px solid rgba(158, 201, 255, 0.32);
+  border-radius: 12px;
+  background: rgba(67, 111, 172, 0.82);
+  color: #f5f7fb;
+  padding: 9px 10px;
+  font-family: 'Space Grotesk', 'Avenir Next', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.igloo-controls__button:hover {
+  background: rgba(78, 128, 196, 0.92);
+}
+
 .igloo-controls__grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
